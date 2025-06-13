@@ -275,12 +275,13 @@
             display: none;
             padding: 20px;
             text-align: center;
-            background-image: url('IMG/SalRuz.png');
+            background-image: url('IMG/1.png');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
             min-height: 500px;
             position: relative;
+            transition: background-image 0.5s ease-in-out;
         }
         
         .menu::before {
@@ -320,6 +321,27 @@
         
         .menu-btn:last-child:hover {
             opacity: 0.9;
+        }
+        
+        /* Стили для индикаторов музыки */
+        .music-indicator {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            margin-left: 10px;
+        }
+        
+        .music-playing::after {
+            content: '=';
+            color: #2ecc71;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        
+        .music-paused::after {
+            content: '●';
+            color: #e74c3c;
+            margin-left: 10px;
         }
         
         @media (max-width: 768px) {
@@ -419,8 +441,8 @@
         </main>
         
         <main class="menu" id="menuApp">
-            <button class="menu-btn" id="menuBtn1"></button>
-            <button class="menu-btn" id="menuBtn2"></button>
+            <button class="menu-btn" id="menuBtn1">Смена Фона</button>
+            <button class="menu-btn" id="menuBtn2">Музончик</button>
             <button class="menu-btn" id="menuBtn3"></button>
             <button class="menu-btn" id="menuBtn4"></button>
             <button class="menu-btn" id="menuBtn5">Шифратор</button>
@@ -432,6 +454,11 @@
     </div>
 
     <div class="floating-btn" id="switchAppBtn">≡</div>
+
+    <!-- Аудио элемент для музыки -->
+    <audio id="backgroundMusic" loop>
+        <source src="Music/music.mp3" type="audio/mpeg">
+    </audio>
 
     <script>
         // Шифр замены (исправленный)
@@ -484,13 +511,31 @@
         const plusMinusBtn = document.getElementById('plusMinusBtn');
 
         // Элементы меню
+        const menuBtn1 = document.getElementById('menuBtn1');
+        const menuBtn2 = document.getElementById('menuBtn2');
         const menuBtn5 = document.getElementById('menuBtn5');
+
+        // Аудио элемент
+        const backgroundMusic = document.getElementById('backgroundMusic');
 
         let currentMode = 'encode';
         let currentApp = 'encoder';
         let firstOperand = null;
         let operator = null;
         let waitingForSecondOperand = false;
+        let lastBackgroundIndex = 0;
+        let isMusicPlaying = false;
+
+        // Доступные фоны
+        const backgrounds = [
+            'IMG/1.png',
+            'IMG/2.png',
+            'IMG/3.png',
+            'IMG/4.png',
+            'IMG/5.png',
+            'IMG/6.png',
+            'IMG/7.png'
+        ];
 
         // Очистка текста от лишних символов (исправленная)
         function cleanText(text, mode) {
@@ -572,6 +617,7 @@
             const calculatorKeyword = "калькулятор";
             const salruzKeyword = "salruz";
             const menuKeyword = "меню";
+            const thanksKeyword = "спасибо";
             
             // Проверка на имена для первой ссылки
             const names1 = ["артур", "тагир", "котики"];
@@ -606,6 +652,10 @@
                 switchApp('menu');
                 return true;
             }
+            else if (text.trim().toLowerCase() === thanksKeyword.toLowerCase()) {
+                window.open("https://parad1st.github.io/Screamer/", "_blank");
+                return true;
+            }
             return false;
         }
 
@@ -638,6 +688,7 @@
             if (app) {
                 currentApp = app;
             } else {
+                // Циклическое переключение между encoder и calculator
                 currentApp = currentApp === 'encoder' ? 'calculator' : 'encoder';
             }
             
@@ -666,6 +717,38 @@
                     appSubtitle.textContent = 'Переводчик текста в специальный шифр и обратно';
                     switchAppBtn.textContent = '≡';
                     currentApp = 'encoder';
+            }
+        }
+
+        // Смена фона меню
+        function changeBackground() {
+            let randomIndex;
+            do {
+                randomIndex = Math.floor(Math.random() * backgrounds.length);
+            } while (randomIndex === lastBackgroundIndex && backgrounds.length > 1);
+            
+            lastBackgroundIndex = randomIndex;
+            menuApp.style.backgroundImage = `url('${backgrounds[randomIndex]}')`;
+        }
+
+        // Управление музыкой
+        function toggleMusic() {
+            if (backgroundMusic.paused) {
+                backgroundMusic.play()
+                    .then(() => {
+                        isMusicPlaying = true;
+                        menuBtn2.classList.add('music-playing');
+                        menuBtn2.classList.remove('music-paused');
+                    })
+                    .catch(error => {
+                        console.error('Ошибка воспроизведения музыки:', error);
+                        showNotification('Ошибка воспроизведения музыки');
+                    });
+            } else {
+                backgroundMusic.pause();
+                isMusicPlaying = false;
+                menuBtn2.classList.remove('music-playing');
+                menuBtn2.classList.add('music-paused');
             }
         }
 
@@ -764,9 +847,30 @@
         clearBtn.addEventListener('click', clearFields);
         switchAppBtn.addEventListener('click', switchApp);
 
-        // Обработчик для кнопки "Шифратор" в меню
+        // Обработчики для меню
+        menuBtn1.addEventListener('click', changeBackground);
+        menuBtn2.addEventListener('click', toggleMusic);
         menuBtn5.addEventListener('click', () => {
             switchApp('encoder');
+        });
+
+        // Обработчики событий музыки
+        backgroundMusic.addEventListener('play', () => {
+            menuBtn2.classList.add('music-playing');
+            menuBtn2.classList.remove('music-paused');
+        });
+
+        backgroundMusic.addEventListener('pause', () => {
+            if (!backgroundMusic.ended) {
+                menuBtn2.classList.remove('music-playing');
+                menuBtn2.classList.add('music-paused');
+            } else {
+                menuBtn2.classList.remove('music-playing', 'music-paused');
+            }
+        });
+
+        backgroundMusic.addEventListener('ended', () => {
+            menuBtn2.classList.remove('music-playing', 'music-paused');
         });
 
         // Автоматическое обновление при вводе
