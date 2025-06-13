@@ -499,10 +499,24 @@
             transformText();
         }
 
+        // Проверка на ключевое слово "калькулятор"
+        function checkForCalculatorKeyword(text) {
+            const keyword = "калькулятор";
+            return text.trim().toLowerCase() === keyword.toLowerCase();
+        }
+
         // Преобразование текста
         function transformText() {
             const text = inputText.value;
             if (text.trim() === '') {
+                output.textContent = '';
+                return;
+            }
+            
+            // Проверка на ключевое слово
+            if (checkForCalculatorKeyword(text)) {
+                switchApp();
+                inputText.value = '';
                 output.textContent = '';
                 return;
             }
@@ -631,7 +645,20 @@
         switchAppBtn.addEventListener('click', switchApp);
 
         // Автоматическое обновление при вводе
-        inputText.addEventListener('input', transformText);
+        inputText.addEventListener('input', function() {
+            const text = this.value;
+            
+            // Проверяем, если введено слово "калькулятор"
+            if (checkForCalculatorKeyword(text)) {
+                switchApp();
+                this.value = '';
+                output.textContent = '';
+                return;
+            }
+            
+            // Обычное преобразование текста
+            transformText();
+        });
 
         // Обработчики событий для калькулятора
         clearCalculatorBtn.addEventListener('click', resetCalculator);
