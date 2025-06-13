@@ -132,10 +132,8 @@
         .btn-primary {
             background-color: var(--primary);
             color: white;
-        }
-        
-        .btn-primary:hover {
-            background-color: var(--primary-dark);
+            cursor: default;
+            pointer-events: none;
         }
         
         .btn-secondary {
@@ -273,7 +271,7 @@
     </div>
 
     <script>
-        // Шифр замены
+        // Шифр замены (исправленный)
         const cipher = {
             'А': '*', 'Б': '6', 'В': '8', 'Г': '[', 'Д': '9', 'Е': '<', 'Ё': ':',
             'Ж': '§', 'З': '}', 'И': '!', 'Й': '~', 'К': '{', 'Л': '/', 'М': '^',
@@ -287,10 +285,14 @@
             'ш': '¶', 'щ': 'π', 'э': ')', 'ю': '%', 'я': '@', ' ': ' '
         };
 
-        // Обратный шифр для дешифровки
-        const reverseCipher = Object.fromEntries(
-            Object.entries(cipher).map(([key, value]) => [value, key])
-        );
+        // Обратный шифр для дешифровки (исправленный)
+        const reverseCipher = {
+            '*': 'А', '6': 'Б', '8': 'В', '[': 'Г', '9': 'Д', '<': 'Е', ':': 'Ё',
+            '§': 'Ж', '}': 'З', '!': 'И', '~': 'Й', '{': 'К', '/': 'Л', '^': 'М',
+            '=': 'Н', '∆': 'О', '#': 'П', '?': 'Р', '(': 'С', '7': 'Т', '√': 'У',
+            '&': 'Ф', '+': 'Х', '¢': 'Ц', '÷': 'Ч', '|': 'Ы', '¿': 'Ь', '-¿': 'Ъ',
+            '¶': 'Ш', 'π': 'Щ', ')': 'Э', '%': 'Ю', '@': 'Я', ' ': ' '
+        };
 
         // DOM элементы
         const inputText = document.getElementById('inputText');
@@ -313,7 +315,15 @@
                 return text.replace(/[^А-Яа-яЁё\s]/g, '');
             } else {
                 // Для дешифровки разрешаем только символы из шифра
-                const allowedChars = Object.values(cipher).map(c => `\\${c}`).join('');
+                const allowedChars = Object.keys(reverseCipher).map(c => 
+                    c === '∆' ? '∆' : 
+                    c === '√' ? '√' : 
+                    c === 'π' ? 'π' : 
+                    c === '¶' ? '¶' : 
+                    c === '¢' ? '¢' : 
+                    c === '÷' ? '÷' : 
+                    c === '§' ? '§' : 
+                    `\\${c}`).join('');
                 const regex = new RegExp(`[^${allowedChars}\\s]`, 'g');
                 return text.replace(regex, '');
             }
@@ -328,7 +338,21 @@
         // Перевод шифра в текст
         function decodeText(text) {
             const cleaned = cleanText(text, 'decode');
-            return cleaned.split('').map(char => reverseCipher[char] || char).join('');
+            let result = '';
+            let i = 0;
+            
+            while (i < cleaned.length) {
+                // Проверяем специальные двухсимвольные комбинации
+                if (cleaned[i] === '-' && cleaned[i+1] === '¿') {
+                    result += reverseCipher['-¿'] || '-¿';
+                    i += 2;
+                } else {
+                    result += reverseCipher[cleaned[i]] || cleaned[i];
+                    i += 1;
+                }
+            }
+            
+            return result;
         }
 
         // Показ уведомления
@@ -387,7 +411,15 @@
         }
 
         // Обработчики событий
-        transformBtn.addEventListener('click', transformText);
+        encodeModeBtn.addEventListener('click', () => {
+            switchMode('encode');
+            transformText();
+        });
+        
+        decodeModeBtn.addEventListener('click', () => {
+            switchMode('decode');
+            transformText();
+        });
         
         copyBtn.addEventListener('click', async () => {
             if (!output.textContent.trim()) {
@@ -405,9 +437,6 @@
         });
 
         clearBtn.addEventListener('click', clearFields);
-        
-        encodeModeBtn.addEventListener('click', () => switchMode('encode'));
-        decodeModeBtn.addEventListener('click', () => switchMode('decode'));
 
         // Автоматическое обновление при вводе
         inputText.addEventListener('input', transformText);
