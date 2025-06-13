@@ -217,6 +217,59 @@
             transform: scale(1.1);
         }
         
+        /* Стили для калькулятора */
+        .calculator {
+            display: none;
+            padding: 20px;
+        }
+        
+        .calculator-display {
+            width: 100%;
+            padding: 15px;
+            font-size: 2rem;
+            text-align: right;
+            margin-bottom: 20px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background-color: var(--light);
+        }
+        
+        .calculator-buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+        
+        .calculator-btn {
+            padding: 15px;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 8px;
+            background-color: var(--light);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .calculator-btn:hover {
+            background-color: #ddd;
+        }
+        
+        .calculator-btn.operator {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .calculator-btn.equals {
+            background-color: var(--secondary);
+            color: white;
+            grid-column: span 2;
+        }
+        
+        .calculator-btn.clear {
+            background-color: var(--danger);
+            color: white;
+        }
+        
         @media (max-width: 768px) {
             body {
                 padding: 10px;
@@ -243,11 +296,11 @@
 <body>
     <div class="container">
         <header>
-            <h1>SalRuzO code</h1>
-            <p class="subtitle">Переводчик текста в специальный шифр и обратно</p>
+            <h1 id="appTitle">SalRuzO code</h1>
+            <p class="subtitle" id="appSubtitle">Переводчик текста в специальный шифр и обратно</p>
         </header>
         
-        <main>
+        <main id="encoderApp">
             <div class="mode-toggle">
                 <button class="toggle-btn active" id="toggleModeBtn">Режим: Шифрование</button>
             </div>
@@ -277,6 +330,35 @@
                     </svg>
                     Очистить
                 </button>
+            </div>
+        </main>
+        
+        <main class="calculator" id="calculatorApp">
+            <input type="text" class="calculator-display" id="calculatorDisplay" readonly>
+            <div class="calculator-buttons">
+                <button class="calculator-btn clear" id="clearCalculatorBtn">C</button>
+                <button class="calculator-btn" id="backspaceBtn">⌫</button>
+                <button class="calculator-btn operator" id="divideBtn">/</button>
+                <button class="calculator-btn operator" id="multiplyBtn">×</button>
+                
+                <button class="calculator-btn" id="sevenBtn">7</button>
+                <button class="calculator-btn" id="eightBtn">8</button>
+                <button class="calculator-btn" id="nineBtn">9</button>
+                <button class="calculator-btn operator" id="subtractBtn">-</button>
+                
+                <button class="calculator-btn" id="fourBtn">4</button>
+                <button class="calculator-btn" id="fiveBtn">5</button>
+                <button class="calculator-btn" id="sixBtn">6</button>
+                <button class="calculator-btn operator" id="addBtn">+</button>
+                
+                <button class="calculator-btn" id="oneBtn">1</button>
+                <button class="calculator-btn" id="twoBtn">2</button>
+                <button class="calculator-btn" id="threeBtn">3</button>
+                <button class="calculator-btn operator" id="equalsBtn">=</button>
+                
+                <button class="calculator-btn" id="zeroBtn">0</button>
+                <button class="calculator-btn" id="decimalBtn">.</button>
+                <button class="calculator-btn" id="plusMinusBtn">±</button>
             </div>
         </main>
         
@@ -321,8 +403,26 @@
         const inputLabel = document.getElementById('inputLabel');
         const outputLabel = document.getElementById('outputLabel');
         const switchAppBtn = document.getElementById('switchAppBtn');
+        const encoderApp = document.getElementById('encoderApp');
+        const calculatorApp = document.getElementById('calculatorApp');
+        const appTitle = document.getElementById('appTitle');
+        const appSubtitle = document.getElementById('appSubtitle');
+        
+        // Элементы калькулятора
+        const calculatorDisplay = document.getElementById('calculatorDisplay');
+        const clearCalculatorBtn = document.getElementById('clearCalculatorBtn');
+        const backspaceBtn = document.getElementById('backspaceBtn');
+        const numberBtns = document.querySelectorAll('.calculator-buttons button:not(.operator):not(.clear):not(#equalsBtn):not(#backspaceBtn)');
+        const operatorBtns = document.querySelectorAll('.operator:not(#equalsBtn)');
+        const equalsBtn = document.getElementById('equalsBtn');
+        const decimalBtn = document.getElementById('decimalBtn');
+        const plusMinusBtn = document.getElementById('plusMinusBtn');
 
         let currentMode = 'encode';
+        let currentApp = 'encoder';
+        let firstOperand = null;
+        let operator = null;
+        let waitingForSecondOperand = false;
 
         // Очистка текста от лишних символов (исправленная)
         function cleanText(text, mode) {
@@ -330,9 +430,14 @@
                 return text.replace(/[^А-Яа-яЁё\s]/g, '');
             } else {
                 // Для дешифровки разрешаем только символы из шифра
-                const allowedChars = Object.keys(reverseCipher).map(c => 
-                    ['*', '.', '+', '?', '|', '(', ')', '[', ']', '{', '}', '^', '$', '\\'].includes(c) ? `\\${c}` : c
-                ).join('');
+                const specialChars = ['*', '.', '+', '?', '|', '(', ')', '[', ']', '{', '}', '^', '$', '\\'];
+                const allowedChars = Object.keys(reverseCipher).map(c => {
+                    if (specialChars.includes(c)) {
+                        return `\\${c}`;
+                    }
+                    return c;
+                }).join('');
+                
                 const regex = new RegExp(`[^${allowedChars}\\s]`, 'g');
                 return text.replace(regex, '');
             }
@@ -351,6 +456,7 @@
             let i = 0;
             
             while (i < cleaned.length) {
+                // Проверяем специальные двухсимвольные комбинации
                 if (cleaned[i] === '-' && cleaned[i+1] === '¿') {
                     result += reverseCipher['-¿'] || '-¿';
                     i += 2;
@@ -410,7 +516,100 @@
             output.textContent = '';
         }
 
-        // Обработчики событий
+        // Переключение между приложениями
+        function switchApp() {
+            if (currentApp === 'encoder') {
+                currentApp = 'calculator';
+                encoderApp.style.display = 'none';
+                calculatorApp.style.display = 'block';
+                appTitle.textContent = 'Калькулятор';
+                appSubtitle.textContent = 'Простой и удобный калькулятор';
+                switchAppBtn.textContent = '←';
+            } else {
+                currentApp = 'encoder';
+                encoderApp.style.display = 'block';
+                calculatorApp.style.display = 'none';
+                appTitle.textContent = 'SalRuzO code';
+                appSubtitle.textContent = 'Переводчик текста в специальный шифр и обратно';
+                switchAppBtn.textContent = '≡';
+            }
+        }
+
+        // Функции калькулятора
+        function inputDigit(digit) {
+            if (waitingForSecondOperand) {
+                calculatorDisplay.value = digit;
+                waitingForSecondOperand = false;
+            } else {
+                calculatorDisplay.value = calculatorDisplay.value === '0' ? digit : calculatorDisplay.value + digit;
+            }
+        }
+
+        function inputDecimal() {
+            if (waitingForSecondOperand) {
+                calculatorDisplay.value = '0.';
+                waitingForSecondOperand = false;
+                return;
+            }
+            
+            if (!calculatorDisplay.value.includes('.')) {
+                calculatorDisplay.value += '.';
+            }
+        }
+
+        function handleOperator(nextOperator) {
+            const inputValue = parseFloat(calculatorDisplay.value);
+            
+            if (firstOperand === null) {
+                firstOperand = inputValue;
+            } else if (operator) {
+                const result = calculate(firstOperand, inputValue, operator);
+                calculatorDisplay.value = String(result);
+                firstOperand = result;
+            }
+            
+            waitingForSecondOperand = true;
+            operator = nextOperator;
+        }
+
+        function calculate(firstOperand, secondOperand, operator) {
+            switch (operator) {
+                case '+':
+                    return firstOperand + secondOperand;
+                case '-':
+                    return firstOperand - secondOperand;
+                case '×':
+                    return firstOperand * secondOperand;
+                case '/':
+                    return firstOperand / secondOperand;
+                default:
+                    return secondOperand;
+            }
+        }
+
+        function resetCalculator() {
+            calculatorDisplay.value = '0';
+            firstOperand = null;
+            operator = null;
+            waitingForSecondOperand = false;
+        }
+
+        function backspace() {
+            if (calculatorDisplay.value.length === 1 || 
+                (calculatorDisplay.value.length === 2 && calculatorDisplay.value.startsWith('-'))) {
+                calculatorDisplay.value = '0';
+            } else {
+                calculatorDisplay.value = calculatorDisplay.value.slice(0, -1);
+            }
+        }
+
+        function toggleSign() {
+            calculatorDisplay.value = calculatorDisplay.value.startsWith('-') ? 
+                calculatorDisplay.value.slice(1) : 
+                '-' + calculatorDisplay.value;
+        }
+
+        // Обработчики событий для переводчика
         toggleModeBtn.addEventListener('click', toggleMode);
         
         copyBtn.addEventListener('click', async () => {
@@ -429,13 +628,43 @@
         });
 
         clearBtn.addEventListener('click', clearFields);
+        switchAppBtn.addEventListener('click', switchApp);
 
         // Автоматическое обновление при вводе
         inputText.addEventListener('input', transformText);
 
+        // Обработчики событий для калькулятора
+        clearCalculatorBtn.addEventListener('click', resetCalculator);
+        backspaceBtn.addEventListener('click', backspace);
+        decimalBtn.addEventListener('click', inputDecimal);
+        plusMinusBtn.addEventListener('click', toggleSign);
+        equalsBtn.addEventListener('click', () => {
+            if (operator && !waitingForSecondOperand) {
+                const inputValue = parseFloat(calculatorDisplay.value);
+                const result = calculate(firstOperand, inputValue, operator);
+                calculatorDisplay.value = String(result);
+                firstOperand = result;
+                waitingForSecondOperand = true;
+                operator = null;
+            }
+        });
+
+        numberBtns.forEach(button => {
+            button.addEventListener('click', () => {
+                inputDigit(button.textContent);
+            });
+        });
+
+        operatorBtns.forEach(button => {
+            button.addEventListener('click', () => {
+                handleOperator(button.textContent);
+            });
+        });
+
         // Инициализация
         document.addEventListener('DOMContentLoaded', () => {
             toggleModeBtn.classList.add('active');
+            resetCalculator();
         });
     </script>
 </body>
