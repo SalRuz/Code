@@ -270,6 +270,39 @@
             color: white;
         }
         
+        /* Стили для меню */
+        .menu {
+            display: none;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .menu-btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 10px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .menu-btn:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        .menu-btn:last-child {
+            background-color: var(--secondary);
+        }
+        
+        .menu-btn:last-child:hover {
+            opacity: 0.9;
+        }
+        
         @media (max-width: 768px) {
             body {
                 padding: 10px;
@@ -362,6 +395,14 @@
             </div>
         </main>
         
+        <main class="menu" id="menuApp">
+            <button class="menu-btn" id="menuBtn1"></button>
+            <button class="menu-btn" id="menuBtn2"></button>
+            <button class="menu-btn" id="menuBtn3"></button>
+            <button class="menu-btn" id="menuBtn4"></button>
+            <button class="menu-btn" id="menuBtn5">Шифратор</button>
+        </main>
+        
         <footer>
             <p>© 2025 SalRuzO | У меня нет прав</p>
         </footer>
@@ -405,6 +446,7 @@
         const switchAppBtn = document.getElementById('switchAppBtn');
         const encoderApp = document.getElementById('encoderApp');
         const calculatorApp = document.getElementById('calculatorApp');
+        const menuApp = document.getElementById('menuApp');
         const appTitle = document.getElementById('appTitle');
         const appSubtitle = document.getElementById('appSubtitle');
         
@@ -417,6 +459,9 @@
         const equalsBtn = document.getElementById('equalsBtn');
         const decimalBtn = document.getElementById('decimalBtn');
         const plusMinusBtn = document.getElementById('plusMinusBtn');
+
+        // Элементы меню
+        const menuBtn5 = document.getElementById('menuBtn5');
 
         let currentMode = 'encode';
         let currentApp = 'encoder';
@@ -503,13 +548,39 @@
         function checkKeywords(text) {
             const calculatorKeyword = "калькулятор";
             const salruzKeyword = "salruz";
+            const menuKeyword = "меню";
+            
+            // Проверка на имена для первой ссылки
+            const names1 = ["артур", "тагир", "котики"];
+            if (names1.some(name => text.trim().toLowerCase() === name)) {
+                window.open("https://youtu.be/L83yZwAJv7M?si=N-6GuyyK2d7TDJLL", "_blank");
+                return true;
+            }
+            
+            // Проверка на имена для второй ссылки
+            const names2 = ["саня", "александр", "саша", "санек", "пес"];
+            if (names2.some(name => text.trim().toLowerCase() === name)) {
+                window.open("https://youtu.be/D01SLZu009M?si=ZTNlYZLLt7Bmc8qD", "_blank");
+                return true;
+            }
+            
+            // Проверка на слова для третьей ссылки
+            const words3 = ["террария", "джо джо"];
+            if (words3.some(word => text.trim().toLowerCase() === word)) {
+                window.open("https://youtu.be/UhhfcKk00u0?si=UYGR8w1MUI_-wc0q", "_blank");
+                return true;
+            }
             
             if (text.trim().toLowerCase() === calculatorKeyword.toLowerCase()) {
-                switchApp();
+                switchApp('calculator');
                 return true;
             }
             else if (text.trim().toLowerCase() === salruzKeyword.toLowerCase()) {
                 window.location.href = "https://t.me/SalRuzO";
+                return true;
+            }
+            else if (text.trim().toLowerCase() === menuKeyword.toLowerCase()) {
+                switchApp('menu');
                 return true;
             }
             return false;
@@ -540,21 +611,38 @@
         }
 
         // Переключение между приложениями
-        function switchApp() {
-            if (currentApp === 'encoder') {
-                currentApp = 'calculator';
-                encoderApp.style.display = 'none';
-                calculatorApp.style.display = 'block';
-                appTitle.textContent = 'Калькулятор';
-                appSubtitle.textContent = 'Простой и удобный калькулятор';
-                switchAppBtn.textContent = '←';
+        function switchApp(app = null) {
+            if (app) {
+                currentApp = app;
             } else {
-                currentApp = 'encoder';
-                encoderApp.style.display = 'block';
-                calculatorApp.style.display = 'none';
-                appTitle.textContent = 'SalRuzO code';
-                appSubtitle.textContent = 'Переводчик текста в специальный шифр и обратно';
-                switchAppBtn.textContent = '≡';
+                currentApp = currentApp === 'encoder' ? 'calculator' : 'encoder';
+            }
+            
+            // Скрыть все приложения
+            encoderApp.style.display = 'none';
+            calculatorApp.style.display = 'none';
+            menuApp.style.display = 'none';
+            
+            // Показать нужное приложение
+            switch (currentApp) {
+                case 'calculator':
+                    calculatorApp.style.display = 'block';
+                    appTitle.textContent = 'Калькулятор';
+                    appSubtitle.textContent = 'Простой и удобный калькулятор';
+                    switchAppBtn.textContent = '←';
+                    break;
+                case 'menu':
+                    menuApp.style.display = 'block';
+                    appTitle.textContent = 'Меню';
+                    appSubtitle.textContent = 'Выберите действие';
+                    switchAppBtn.textContent = '←';
+                    break;
+                default:
+                    encoderApp.style.display = 'block';
+                    appTitle.textContent = 'SalRuzO code';
+                    appSubtitle.textContent = 'Переводчик текста в специальный шифр и обратно';
+                    switchAppBtn.textContent = '≡';
+                    currentApp = 'encoder';
             }
         }
 
@@ -652,6 +740,11 @@
 
         clearBtn.addEventListener('click', clearFields);
         switchAppBtn.addEventListener('click', switchApp);
+
+        // Обработчик для кнопки "Шифратор" в меню
+        menuBtn5.addEventListener('click', () => {
+            switchApp('encoder');
+        });
 
         // Автоматическое обновление при вводе
         inputText.addEventListener('input', function() {
