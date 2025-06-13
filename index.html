@@ -63,6 +63,7 @@
         
         .input-group {
             margin-bottom: 25px;
+            position: relative;
         }
         
         label {
@@ -88,6 +89,35 @@
             border-color: var(--primary);
             outline: none;
             box-shadow: 0 0 0 3px rgba(74, 107, 223, 0.2);
+        }
+        
+        .swap-btn {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 2;
+            transition: all 0.3s;
+        }
+        
+        .swap-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-50%) scale(1.1);
+        }
+        
+        .swap-btn svg {
+            width: 20px;
+            height: 20px;
         }
         
         .output-container {
@@ -194,29 +224,6 @@
             font-size: 0.9rem;
         }
         
-        .floating-btn {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background-color: var(--primary);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            cursor: pointer;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            z-index: 1000;
-            transition: transform 0.3s;
-        }
-        
-        .floating-btn:hover {
-            transform: scale(1.1);
-        }
-        
         /* Стили для калькулятора */
         .calculator {
             display: none;
@@ -289,7 +296,7 @@
             width: 100%;
             padding: 15px;
             margin-bottom: 10px;
-            background-color: var(--primary);
+            background-color: rgba(74, 107, 223, 0.25);
             color: white;
             border: none;
             border-radius: 8px;
@@ -297,26 +304,29 @@
             cursor: pointer;
             transition: background-color 0.2s;
             position: relative;
+            backdrop-filter: blur(5px);
         }
         
         .menu-btn:hover {
-            background-color: var(--primary-dark);
+            background-color: rgba(74, 107, 223, 0.4);
         }
         
         .menu-btn:last-child {
-            background-color: var(--secondary);
+            background-color: rgba(46, 204, 113, 0.25);
         }
         
         .menu-btn:last-child:hover {
-            opacity: 0.9;
+            background-color: rgba(46, 204, 113, 0.4);
         }
         
         /* Стили для индикаторов музыки */
         .music-playing::after {
-            content: '||';
+            content: '∾';
             color: #2ecc71;
             font-weight: bold;
             margin-left: 10px;
+            transform: rotate(90deg);
+            display: inline-block;
         }
         
         .music-paused::after {
@@ -328,10 +338,11 @@
         /* Стили для счетчика посещений */
         .visit-counter {
             position: absolute;
-            top: 10px;
-            right: 10px;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
             background-color: rgba(255, 255, 255, 0.8);
-            padding: 5px 10px;
+            padding: 5px 15px;
             border-radius: 20px;
             font-weight: bold;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -350,16 +361,14 @@
                 flex-direction: column;
             }
             
-            .floating-btn {
-                bottom: 20px;
-                right: 20px;
-                width: 50px;
-                height: 50px;
-                font-size: 20px;
-            }
-            
             .menu {
                 min-height: 400px;
+            }
+            
+            .swap-btn {
+                right: 5px;
+                width: 35px;
+                height: 35px;
             }
         }
     </style>
@@ -379,6 +388,11 @@
             <div class="input-group">
                 <label for="inputText" id="inputLabel">Исходный текст:</label>
                 <textarea id="inputText" placeholder="Введите текст для шифрования..." autofocus></textarea>
+                <button class="swap-btn" id="swapBtn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+                    </svg>
+                </button>
             </div>
             
             <div class="output-container">
@@ -434,20 +448,18 @@
         </main>
         
         <main class="menu" id="menuApp">
-            <div class="visit-counter" id="visitCounter">Посещений: 0</div>
             <button class="menu-btn" id="menuBtn1">Смена Фона</button>
             <button class="menu-btn" id="menuBtn2">Музончик</button>
             <button class="menu-btn" id="menuBtn3"></button>
             <button class="menu-btn" id="menuBtn4"></button>
             <button class="menu-btn" id="menuBtn5">Шифратор</button>
+            <div class="visit-counter" id="visitCounter">Посещений: 0</div>
         </main>
         
         <footer>
             <p>© 2025 SalRuzO | У меня нет прав</p>
         </footer>
     </div>
-
-    <div class="floating-btn" id="switchAppBtn">≡</div>
 
     <!-- Аудио элемент для музыки -->
     <audio id="backgroundMusic" loop>
@@ -487,7 +499,7 @@
         const toggleModeBtn = document.getElementById('toggleModeBtn');
         const inputLabel = document.getElementById('inputLabel');
         const outputLabel = document.getElementById('outputLabel');
-        const switchAppBtn = document.getElementById('switchAppBtn');
+        const swapBtn = document.getElementById('swapBtn');
         const encoderApp = document.getElementById('encoderApp');
         const calculatorApp = document.getElementById('calculatorApp');
         const menuApp = document.getElementById('menuApp');
@@ -645,6 +657,19 @@
             transformText();
         }
 
+        // Обмен текстами между полями ввода и вывода
+        function swapTexts() {
+            const temp = inputText.value;
+            inputText.value = output.textContent;
+            output.textContent = temp;
+            
+            // Меняем режим
+            toggleMode();
+            
+            // Сохраняем изменения
+            localStorage.setItem('encoderInput', inputText.value);
+        }
+
         // Проверка на ключевые слова
         function checkKeywords(text) {
             const calculatorKeyword = "калькулятор";
@@ -723,8 +748,7 @@
             if (app) {
                 currentApp = app;
             } else {
-                // Циклическое переключение между encoder и calculator
-                currentApp = currentApp === 'encoder' ? 'calculator' : 'encoder';
+                currentApp = 'encoder';
             }
             
             // Скрыть все приложения
@@ -738,19 +762,16 @@
                     calculatorApp.style.display = 'block';
                     appTitle.textContent = 'Калькулятор';
                     appSubtitle.textContent = 'Простой и удобный калькулятор';
-                    switchAppBtn.textContent = '←';
                     break;
                 case 'menu':
                     menuApp.style.display = 'block';
                     appTitle.textContent = 'Меню';
                     appSubtitle.textContent = 'Выберите действие';
-                    switchAppBtn.textContent = '←';
                     break;
                 default:
                     encoderApp.style.display = 'block';
                     appTitle.textContent = 'SalRuzO code';
                     appSubtitle.textContent = 'Переводчик текста в специальный шифр и обратно';
-                    switchAppBtn.textContent = '≡';
                     currentApp = 'encoder';
             }
         }
@@ -894,7 +915,7 @@
         });
 
         clearBtn.addEventListener('click', clearFields);
-        switchAppBtn.addEventListener('click', switchApp);
+        swapBtn.addEventListener('click', swapTexts);
 
         // Обработчики для меню
         menuBtn1.addEventListener('click', changeBackground);
