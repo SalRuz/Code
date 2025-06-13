@@ -275,24 +275,13 @@
             display: none;
             padding: 20px;
             text-align: center;
-            background-image: url('IMG/1.png');
+            background-image: url('IMG/SalRuz.png');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
             min-height: 500px;
             position: relative;
             transition: background-image 0.5s ease-in-out;
-        }
-        
-        .menu::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 1;
         }
         
         .menu-btn {
@@ -308,7 +297,6 @@
             cursor: pointer;
             transition: background-color 0.2s;
             position: relative;
-            z-index: 2;
         }
         
         .menu-btn:hover {
@@ -324,15 +312,8 @@
         }
         
         /* Стили для индикаторов музыки */
-        .music-indicator {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            margin-left: 10px;
-        }
-        
         .music-playing::after {
-            content: '=';
+            content: '||';
             color: #2ecc71;
             font-weight: bold;
             margin-left: 10px;
@@ -342,6 +323,18 @@
             content: '●';
             color: #e74c3c;
             margin-left: 10px;
+        }
+        
+        /* Стили для счетчика посещений */
+        .visit-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         
         @media (max-width: 768px) {
@@ -441,6 +434,7 @@
         </main>
         
         <main class="menu" id="menuApp">
+            <div class="visit-counter" id="visitCounter">Посещений: 0</div>
             <button class="menu-btn" id="menuBtn1">Смена Фона</button>
             <button class="menu-btn" id="menuBtn2">Музончик</button>
             <button class="menu-btn" id="menuBtn3"></button>
@@ -499,6 +493,7 @@
         const menuApp = document.getElementById('menuApp');
         const appTitle = document.getElementById('appTitle');
         const appSubtitle = document.getElementById('appSubtitle');
+        const visitCounter = document.getElementById('visitCounter');
         
         // Элементы калькулятора
         const calculatorDisplay = document.getElementById('calculatorDisplay');
@@ -526,8 +521,9 @@
         let lastBackgroundIndex = 0;
         let isMusicPlaying = false;
 
-        // Доступные фоны
+        // Доступные фоны (включая SalRuz.png)
         const backgrounds = [
+            'IMG/SalRuz.png',
             'IMG/1.png',
             'IMG/2.png',
             'IMG/3.png',
@@ -536,6 +532,43 @@
             'IMG/6.png',
             'IMG/7.png'
         ];
+
+        // Инициализация localStorage
+        function initLocalStorage() {
+            // Загрузка данных из localStorage
+            if (localStorage.getItem('encoderInput')) {
+                inputText.value = localStorage.getItem('encoderInput');
+                transformText();
+            }
+            
+            if (localStorage.getItem('calculatorDisplay')) {
+                calculatorDisplay.value = localStorage.getItem('calculatorDisplay');
+            }
+            
+            if (localStorage.getItem('calculatorState')) {
+                const state = JSON.parse(localStorage.getItem('calculatorState'));
+                firstOperand = state.firstOperand;
+                operator = state.operator;
+                waitingForSecondOperand = state.waitingForSecondOperand;
+            }
+            
+            // Счетчик посещений
+            let visits = localStorage.getItem('visitCount') || 0;
+            visits = parseInt(visits) + 1;
+            localStorage.setItem('visitCount', visits);
+            visitCounter.textContent = `Посещений: ${visits}`;
+        }
+
+        // Сохранение состояния калькулятора
+        function saveCalculatorState() {
+            const state = {
+                firstOperand,
+                operator,
+                waitingForSecondOperand
+            };
+            localStorage.setItem('calculatorState', JSON.stringify(state));
+            localStorage.setItem('calculatorDisplay', calculatorDisplay.value);
+        }
 
         // Очистка текста от лишних символов (исправленная)
         function cleanText(text, mode) {
@@ -675,12 +708,14 @@
             }
             
             output.textContent = currentMode === 'encode' ? encodeText(text) : decodeText(text);
+            localStorage.setItem('encoderInput', inputText.value);
         }
 
         // Очистка полей (без фокуса на поле ввода)
         function clearFields() {
             inputText.value = '';
             output.textContent = '';
+            localStorage.removeItem('encoderInput');
         }
 
         // Переключение между приложениями
@@ -760,6 +795,7 @@
             } else {
                 calculatorDisplay.value = calculatorDisplay.value === '0' ? digit : calculatorDisplay.value + digit;
             }
+            saveCalculatorState();
         }
 
         function inputDecimal() {
@@ -772,6 +808,7 @@
             if (!calculatorDisplay.value.includes('.')) {
                 calculatorDisplay.value += '.';
             }
+            saveCalculatorState();
         }
 
         function handleOperator(nextOperator) {
@@ -787,21 +824,30 @@
             
             waitingForSecondOperand = true;
             operator = nextOperator;
+            saveCalculatorState();
         }
 
         function calculate(firstOperand, secondOperand, operator) {
+            let result;
             switch (operator) {
                 case '+':
-                    return firstOperand + secondOperand;
+                    result = firstOperand + secondOperand;
+                    break;
                 case '-':
-                    return firstOperand - secondOperand;
+                    result = firstOperand - secondOperand;
+                    break;
                 case '×':
-                    return firstOperand * secondOperand;
+                    result = firstOperand * secondOperand;
+                    break;
                 case '/':
-                    return firstOperand / secondOperand;
+                    result = firstOperand / secondOperand;
+                    break;
                 default:
-                    return secondOperand;
+                    result = secondOperand;
             }
+            
+            saveCalculatorState();
+            return result;
         }
 
         function resetCalculator() {
@@ -809,6 +855,7 @@
             firstOperand = null;
             operator = null;
             waitingForSecondOperand = false;
+            saveCalculatorState();
         }
 
         function backspace() {
@@ -818,12 +865,14 @@
             } else {
                 calculatorDisplay.value = calculatorDisplay.value.slice(0, -1);
             }
+            saveCalculatorState();
         }
 
         function toggleSign() {
             calculatorDisplay.value = calculatorDisplay.value.startsWith('-') ? 
                 calculatorDisplay.value.slice(1) : 
                 '-' + calculatorDisplay.value;
+            saveCalculatorState();
         }
 
         // Обработчики событий для переводчика
@@ -901,6 +950,7 @@
                 firstOperand = result;
                 waitingForSecondOperand = true;
                 operator = null;
+                saveCalculatorState();
             }
         });
 
@@ -920,6 +970,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             toggleModeBtn.classList.add('active');
             resetCalculator();
+            initLocalStorage();
         });
     </script>
 </body>
