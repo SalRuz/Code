@@ -91,35 +91,6 @@
             box-shadow: 0 0 0 3px rgba(74, 107, 223, 0.2);
         }
         
-        .swap-btn {
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            z-index: 2;
-            transition: all 0.3s;
-        }
-        
-        .swap-btn:hover {
-            background: var(--primary-dark);
-            transform: translateY(-50%) scale(1.1);
-        }
-        
-        .swap-btn svg {
-            width: 20px;
-            height: 20px;
-        }
-        
         .output-container {
             position: relative;
             margin-bottom: 25px;
@@ -181,6 +152,7 @@
             display: flex;
             justify-content: center;
             margin-bottom: 20px;
+            position: relative;
         }
         
         .toggle-btn {
@@ -277,16 +249,22 @@
             color: white;
         }
         
+        .calculator-btn.back {
+            background-color: var(--tertiary);
+            color: white;
+            grid-column: span 2;
+        }
+        
         /* Стили для меню */
         .menu {
             display: none;
-            padding: 20px;
+            padding: 30px;
             text-align: center;
             background-image: url('IMG/SalRuz.png');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-            min-height: 500px;
+            min-height: 600px;
             position: relative;
             transition: background-image 0.5s ease-in-out;
         }
@@ -295,7 +273,7 @@
             display: block;
             width: 100%;
             padding: 15px;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
             background-color: rgba(74, 107, 223, 0.25);
             color: white;
             border: none;
@@ -321,31 +299,104 @@
         
         /* Стили для индикаторов музыки */
         .music-playing::after {
-            content: '∾';
+            content: '‖';
             color: #2ecc71;
             font-weight: bold;
             margin-left: 10px;
-            transform: rotate(90deg);
-            display: inline-block;
+            font-size: 1.2em;
         }
         
         .music-paused::after {
             content: '●';
             color: #e74c3c;
             margin-left: 10px;
+            font-size: 1.2em;
         }
         
         /* Стили для счетчика посещений */
         .visit-counter {
             position: absolute;
-            bottom: 20px;
+            bottom: 80px;
             left: 50%;
             transform: translateX(-50%);
             background-color: rgba(255, 255, 255, 0.8);
-            padding: 5px 15px;
+            padding: 8px 20px;
             border-radius: 20px;
             font-weight: bold;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            width: max-content;
+        }
+        
+        /* Стили для приветствия */
+        .welcome-message {
+            position: absolute;
+            bottom: 120px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            width: max-content;
+            max-width: 80%;
+            text-align: center;
+        }
+        
+        /* Стили для чата */
+        .chat {
+            display: none;
+            padding: 30px;
+            text-align: center;
+            background-image: url('IMG/SalRuz.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            min-height: 600px;
+            position: relative;
+        }
+        
+        .chat-input-group {
+            margin-bottom: 20px;
+            position: relative;
+            width: 80%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .chat-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-family: var(--font-main);
+            font-size: 1rem;
+        }
+        
+        .chat-ok-btn {
+            position: absolute;
+            right: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        
+        .chat-back-btn {
+            display: block;
+            width: 150px;
+            margin: 20px auto 0;
+            padding: 10px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
         }
         
         @media (max-width: 768px) {
@@ -361,14 +412,13 @@
                 flex-direction: column;
             }
             
-            .menu {
-                min-height: 400px;
+            .menu, .chat {
+                min-height: 500px;
+                padding: 20px;
             }
             
-            .swap-btn {
-                right: 5px;
-                width: 35px;
-                height: 35px;
+            .chat-input-group {
+                width: 95%;
             }
         }
     </style>
@@ -388,11 +438,6 @@
             <div class="input-group">
                 <label for="inputText" id="inputLabel">Исходный текст:</label>
                 <textarea id="inputText" placeholder="Введите текст для шифрования..." autofocus></textarea>
-                <button class="swap-btn" id="swapBtn">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
-                    </svg>
-                </button>
             </div>
             
             <div class="output-container">
@@ -444,16 +489,26 @@
                 <button class="calculator-btn" id="zeroBtn">0</button>
                 <button class="calculator-btn" id="decimalBtn">.</button>
                 <button class="calculator-btn" id="plusMinusBtn">±</button>
+                <button class="calculator-btn back" id="calculatorBackBtn">Назад</button>
             </div>
         </main>
         
         <main class="menu" id="menuApp">
             <button class="menu-btn" id="menuBtn1">Смена Фона</button>
             <button class="menu-btn" id="menuBtn2">Музончик</button>
-            <button class="menu-btn" id="menuBtn3"></button>
+            <button class="menu-btn" id="menuBtn3">Чат</button>
             <button class="menu-btn" id="menuBtn4"></button>
             <button class="menu-btn" id="menuBtn5">Шифратор</button>
             <div class="visit-counter" id="visitCounter">Посещений: 0</div>
+            <div class="welcome-message" id="welcomeMessage"></div>
+        </main>
+        
+        <main class="chat" id="chatApp">
+            <div class="chat-input-group">
+                <input type="text" class="chat-input" id="nicknameInput" placeholder="Придумайте Никнейм">
+                <button class="chat-ok-btn" id="nicknameOkBtn">Ок</button>
+            </div>
+            <button class="chat-back-btn" id="chatBackBtn">Вернуться в меню</button>
         </main>
         
         <footer>
@@ -499,19 +554,24 @@
         const toggleModeBtn = document.getElementById('toggleModeBtn');
         const inputLabel = document.getElementById('inputLabel');
         const outputLabel = document.getElementById('outputLabel');
-        const swapBtn = document.getElementById('swapBtn');
         const encoderApp = document.getElementById('encoderApp');
         const calculatorApp = document.getElementById('calculatorApp');
         const menuApp = document.getElementById('menuApp');
+        const chatApp = document.getElementById('chatApp');
         const appTitle = document.getElementById('appTitle');
         const appSubtitle = document.getElementById('appSubtitle');
         const visitCounter = document.getElementById('visitCounter');
+        const welcomeMessage = document.getElementById('welcomeMessage');
+        const nicknameInput = document.getElementById('nicknameInput');
+        const nicknameOkBtn = document.getElementById('nicknameOkBtn');
+        const chatBackBtn = document.getElementById('chatBackBtn');
+        const calculatorBackBtn = document.getElementById('calculatorBackBtn');
         
         // Элементы калькулятора
         const calculatorDisplay = document.getElementById('calculatorDisplay');
         const clearCalculatorBtn = document.getElementById('clearCalculatorBtn');
         const backspaceBtn = document.getElementById('backspaceBtn');
-        const numberBtns = document.querySelectorAll('.calculator-buttons button:not(.operator):not(.clear):not(#equalsBtn):not(#backspaceBtn)');
+        const numberBtns = document.querySelectorAll('.calculator-buttons button:not(.operator):not(.clear):not(#equalsBtn):not(#backspaceBtn):not(#calculatorBackBtn)');
         const operatorBtns = document.querySelectorAll('.operator:not(#equalsBtn)');
         const equalsBtn = document.getElementById('equalsBtn');
         const decimalBtn = document.getElementById('decimalBtn');
@@ -520,6 +580,7 @@
         // Элементы меню
         const menuBtn1 = document.getElementById('menuBtn1');
         const menuBtn2 = document.getElementById('menuBtn2');
+        const menuBtn3 = document.getElementById('menuBtn3');
         const menuBtn5 = document.getElementById('menuBtn5');
 
         // Аудио элемент
@@ -569,6 +630,11 @@
             visits = parseInt(visits) + 1;
             localStorage.setItem('visitCount', visits);
             visitCounter.textContent = `Посещений: ${visits}`;
+            
+            // Никнейм пользователя
+            if (localStorage.getItem('userNickname')) {
+                welcomeMessage.textContent = `Добро пожаловать, ${localStorage.getItem('userNickname')}`;
+            }
         }
 
         // Сохранение состояния калькулятора
@@ -638,6 +704,12 @@
 
         // Переключение режима
         function toggleMode() {
+            // Сначала меняем текст в полях местами
+            const temp = inputText.value;
+            inputText.value = output.textContent;
+            output.textContent = temp;
+            
+            // Затем меняем режим
             currentMode = currentMode === 'encode' ? 'decode' : 'encode';
             
             if (currentMode === 'encode') {
@@ -653,18 +725,6 @@
                 outputLabel.textContent = 'Расшифрованный текст:';
                 inputText.placeholder = 'Введите шифр для расшифровки...';
             }
-            
-            transformText();
-        }
-
-        // Обмен текстами между полями ввода и вывода
-        function swapTexts() {
-            const temp = inputText.value;
-            inputText.value = output.textContent;
-            output.textContent = temp;
-            
-            // Меняем режим
-            toggleMode();
             
             // Сохраняем изменения
             localStorage.setItem('encoderInput', inputText.value);
@@ -755,6 +815,7 @@
             encoderApp.style.display = 'none';
             calculatorApp.style.display = 'none';
             menuApp.style.display = 'none';
+            chatApp.style.display = 'none';
             
             // Показать нужное приложение
             switch (currentApp) {
@@ -767,6 +828,11 @@
                     menuApp.style.display = 'block';
                     appTitle.textContent = 'Меню';
                     appSubtitle.textContent = 'Выберите действие';
+                    break;
+                case 'chat':
+                    chatApp.style.display = 'block';
+                    appTitle.textContent = 'Чат';
+                    appSubtitle.textContent = 'Установите ваш никнейм';
                     break;
                 default:
                     encoderApp.style.display = 'block';
@@ -808,6 +874,36 @@
             }
         }
 
+        // Проверка на число 26 в калькуляторе
+        function checkFor26() {
+            if (calculatorDisplay.value === '26') {
+                backgroundMusic.play()
+                    .then(() => {
+                        isMusicPlaying = true;
+                        if (currentApp === 'menu') {
+                            menuBtn2.classList.add('music-playing');
+                            menuBtn2.classList.remove('music-paused');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Ошибка воспроизведения музыки:', error);
+                    });
+            }
+        }
+
+        // Сохранение никнейма
+        function saveNickname() {
+            const nickname = nicknameInput.value.trim();
+            if (!nickname) {
+                showNotification('Введите никнейм');
+                return;
+            }
+            
+            localStorage.setItem('userNickname', nickname);
+            welcomeMessage.textContent = `Добро пожаловать, ${nickname}`;
+            switchApp('menu');
+        }
+
         // Функции калькулятора
         function inputDigit(digit) {
             if (waitingForSecondOperand) {
@@ -817,6 +913,7 @@
                 calculatorDisplay.value = calculatorDisplay.value === '0' ? digit : calculatorDisplay.value + digit;
             }
             saveCalculatorState();
+            checkFor26();
         }
 
         function inputDecimal() {
@@ -868,6 +965,7 @@
             }
             
             saveCalculatorState();
+            checkFor26();
             return result;
         }
 
@@ -887,6 +985,7 @@
                 calculatorDisplay.value = calculatorDisplay.value.slice(0, -1);
             }
             saveCalculatorState();
+            checkFor26();
         }
 
         function toggleSign() {
@@ -915,32 +1014,53 @@
         });
 
         clearBtn.addEventListener('click', clearFields);
-        swapBtn.addEventListener('click', swapTexts);
 
         // Обработчики для меню
         menuBtn1.addEventListener('click', changeBackground);
         menuBtn2.addEventListener('click', toggleMusic);
+        menuBtn3.addEventListener('click', () => {
+            switchApp('chat');
+        });
         menuBtn5.addEventListener('click', () => {
+            switchApp('encoder');
+        });
+
+        // Обработчики для чата
+        nicknameOkBtn.addEventListener('click', saveNickname);
+        chatBackBtn.addEventListener('click', () => {
+            switchApp('menu');
+        });
+
+        // Обработчик для кнопки назад в калькуляторе
+        calculatorBackBtn.addEventListener('click', () => {
             switchApp('encoder');
         });
 
         // Обработчики событий музыки
         backgroundMusic.addEventListener('play', () => {
-            menuBtn2.classList.add('music-playing');
-            menuBtn2.classList.remove('music-paused');
+            if (currentApp === 'menu') {
+                menuBtn2.classList.add('music-playing');
+                menuBtn2.classList.remove('music-paused');
+            }
         });
 
         backgroundMusic.addEventListener('pause', () => {
             if (!backgroundMusic.ended) {
-                menuBtn2.classList.remove('music-playing');
-                menuBtn2.classList.add('music-paused');
+                if (currentApp === 'menu') {
+                    menuBtn2.classList.remove('music-playing');
+                    menuBtn2.classList.add('music-paused');
+                }
             } else {
-                menuBtn2.classList.remove('music-playing', 'music-paused');
+                if (currentApp === 'menu') {
+                    menuBtn2.classList.remove('music-playing', 'music-paused');
+                }
             }
         });
 
         backgroundMusic.addEventListener('ended', () => {
-            menuBtn2.classList.remove('music-playing', 'music-paused');
+            if (currentApp === 'menu') {
+                menuBtn2.classList.remove('music-playing', 'music-paused');
+            }
         });
 
         // Автоматическое обновление при вводе
@@ -972,6 +1092,7 @@
                 waitingForSecondOperand = true;
                 operator = null;
                 saveCalculatorState();
+                checkFor26();
             }
         });
 
