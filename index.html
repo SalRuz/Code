@@ -499,10 +499,20 @@
             transformText();
         }
 
-        // Проверка на ключевое слово "калькулятор"
-        function checkForCalculatorKeyword(text) {
-            const keyword = "калькулятор";
-            return text.trim().toLowerCase() === keyword.toLowerCase();
+        // Проверка на ключевые слова
+        function checkKeywords(text) {
+            const calculatorKeyword = "калькулятор";
+            const salruzKeyword = "salruz";
+            
+            if (text.trim().toLowerCase() === calculatorKeyword.toLowerCase()) {
+                switchApp();
+                return true;
+            }
+            else if (text.trim().toLowerCase() === salruzKeyword.toLowerCase()) {
+                window.location.href = "https://t.me/SalRuzO";
+                return true;
+            }
+            return false;
         }
 
         // Преобразование текста
@@ -513,9 +523,8 @@
                 return;
             }
             
-            // Проверка на ключевое слово
-            if (checkForCalculatorKeyword(text)) {
-                switchApp();
+            // Проверка на ключевые слова
+            if (checkKeywords(text)) {
                 inputText.value = '';
                 output.textContent = '';
                 return;
@@ -648,9 +657,8 @@
         inputText.addEventListener('input', function() {
             const text = this.value;
             
-            // Проверяем, если введено слово "калькулятор"
-            if (checkForCalculatorKeyword(text)) {
-                switchApp();
+            // Проверяем на ключевые слова
+            if (checkKeywords(text)) {
                 this.value = '';
                 output.textContent = '';
                 return;
