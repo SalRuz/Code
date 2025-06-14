@@ -387,6 +387,17 @@
             color: var(--primary);
         }
         
+        .message-time {
+            font-size: 0.8em;
+            color: #7f8c8d;
+            margin-left: 8px;
+        }
+        
+        .message-text {
+            margin-top: 4px;
+            line-height: 1.4;
+        }
+        
         .chat-input-container {
             display: flex;
             padding: 10px;
@@ -592,7 +603,18 @@
         <source src="Music/music.mp3" type="audio/mpeg">
     </audio>
 
+    <!-- Подключаем Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <script>
+        // ===== КОНФИГУРАЦИЯ SUPABASE =====
+        // ЗАМЕНИТЕ ЭТИ ЗНАЧЕНИЯ НА СВОИ ИЗ ЛИЧНОГО КАБИНЕТА SUPABASE
+        const supabaseUrl = 'https://skpykngtzexxcytgqgcv.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNrcHlrbmd0emV4eGN5dGdxZ2N2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4OTMyNTYsImV4cCI6MjA2NTQ2OTI1Nn0.9w_pvdUo5eSDrzH47oBYzIsOmJ9kcmshh1vPR79pCts
+';
+        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+        // =================================
+
         // Шифр замены (исправленный)
         const cipher = {
             'А': '*', 'Б': '6', 'В': '8', 'Г': '[', 'Д': '9', 'Е': '<', 'Ё': ':',
@@ -683,6 +705,131 @@
             'IMG/7.png'
         ];
 
+        // ===== ОБНОВЛЕННЫЕ ФУНКЦИИ ЧАТА ДЛЯ SUPABASE =====
+        async function loadMessages() {
+            try {
+                chatMessages.innerHTML = '<div style="text-align: center;">Загрузка сообщений...</div>';
+                
+                const { data, error } = await supabase
+                    .from('messages')
+                    .select('*')
+                    .order('created_at', { ascending: true });
+                
+                if (error) throw error;
+                
+                chatMessages.innerHTML = '';
+                
+                if (data.length === 0) {
+                    chatMessages.innerHTML = '<div style="text-align: center;">Нет сообщений</div>';
+                    return;
+                }
+                
+                data.forEach(msg => {
+                    const date = new Date(msg.created_at);
+                    const timeString = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    
+                    const messageElement = document.createElement('div');
+                    messageElement.className = 'message';
+                    messageElement.innerHTML = `
+                        <span class="message-sender">${msg.sender}</span>
+                        <span class="message-time">${timeString}</span>
+                        <div class="message-text">${msg.text}</div>
+                    `;
+                    
+                    chatMessages.appendChild(messageElement);
+                });
+                
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                
+            } catch (error) {
+                console.error('Ошибка загрузки сообщений:', error);
+                chatMessages.innerHTML = '<div style="text-align: center; color: red;">Ошибка загрузки сообщений</div>';
+            }
+        }
+
+        async function sendMessage() {
+            const messageText = messageInput.value.trim();
+            if (!messageText) {
+                showNotification('Введите сообщение');
+                return;
+            }
+
+            const nickname = localStorage.getItem('userNickname') || 'Аноним';
+            
+            try {
+                sendMessageBtn.disabled = true;
+                sendMessageBtn.textContent = 'Отправка...';
+                
+                const { error } = await supabase
+                    .from('messages')
+                    .insert([{ 
+                        sender: nickname, 
+                        text: messageText 
+                    }]);
+                
+                if (error) throw error;
+                
+                messageInput.value = '';
+                
+            } catch (error) {
+                console.error('Ошибка отправки:', error);
+                showNotification('Ошибка отправки сообщения');
+                
+            } finally {
+                sendMessageBtn.disabled = false;
+                sendMessageBtn.textContent = 'Отправить';
+            }
+        }
+
+        function setupRealtimeUpdates() {
+            supabase
+                .channel('public:messages')
+                .on(
+                    'postgres_changes',
+                    { 
+                        event: 'INSERT',
+                        schema: 'public',
+                        table: 'messages'
+                    },
+                    (payload) => {
+                        const newMessage = payload.new;
+                        const date = new Date(newMessage.created_at);
+                        const timeString = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                        
+                        const messageElement = document.createElement('div');
+                        messageElement.className = 'message';
+                        messageElement.innerHTML = `
+                            <span class="message-sender">${newMessage.sender}</span>
+                            <span class="message-time">${timeString}</span>
+                            <div class="message-text">${newMessage.text}</div>
+                        `;
+                        
+                        chatMessages.appendChild(messageElement);
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                    }
+                )
+                .subscribe();
+        }
+
+        function saveNickname() {
+            const nickname = nicknameInput.value.trim();
+            if (!nickname) {
+                showNotification('Введите никнейм');
+                return;
+            }
+            
+            localStorage.setItem('userNickname', nickname);
+            welcomeMessage.textContent = `Добро пожаловать, ${nickname}`;
+            
+            nicknameSetup.style.display = 'none';
+            chatInterface.style.display = 'block';
+            appSubtitle.textContent = 'Чат с друзьями';
+            
+            setupRealtimeUpdates();
+            loadMessages();
+        }
+        // ===== КОНЕЦ ОБНОВЛЕННЫХ ФУНКЦИЙ ЧАТА =====
+
         // Инициализация localStorage
         function initLocalStorage() {
             // Загрузка данных из localStorage
@@ -712,11 +859,11 @@
             if (localStorage.getItem('userNickname')) {
                 welcomeMessage.textContent = `Добро пожаловать, ${localStorage.getItem('userNickname')}`;
                 
-                // Если никнейм есть, показываем интерфейс чата
                 nicknameSetup.style.display = 'none';
                 chatInterface.style.display = 'block';
                 
-                // Загружаем сообщения
+                // Инициализация real-time чата
+                setupRealtimeUpdates();
                 loadMessages();
             }
             
@@ -989,69 +1136,6 @@
             }
         }
 
-        // Сохранение никнейма
-        function saveNickname() {
-            const nickname = nicknameInput.value.trim();
-            if (!nickname) {
-                showNotification('Введите никнейм');
-                return;
-            }
-            
-            localStorage.setItem('userNickname', nickname);
-            welcomeMessage.textContent = `Добро пожаловать, ${nickname}`;
-            
-            // Переключаем на интерфейс чата
-            nicknameSetup.style.display = 'none';
-            chatInterface.style.display = 'block';
-            appSubtitle.textContent = 'Чат с друзьями';
-            
-            // Загружаем сообщения
-            loadMessages();
-        }
-
-        // Загрузка сообщений
-        function loadMessages() {
-            const messages = JSON.parse(localStorage.getItem('chatMessages') || '[]');
-            chatMessages.innerHTML = '';
-            
-            messages.forEach(msg => {
-                const messageElement = document.createElement('div');
-                messageElement.className = 'message';
-                messageElement.innerHTML = `<span class="message-sender">${msg.sender}:</span> ${msg.text}`;
-                chatMessages.appendChild(messageElement);
-            });
-            
-            // Прокручиваем вниз
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
-
-        // Отправка сообщения
-        function sendMessage() {
-            const messageText = messageInput.value.trim();
-            if (!messageText) return;
-            
-            const nickname = localStorage.getItem('userNickname') || 'Аноним';
-            
-            // Получаем текущие сообщения
-            const messages = JSON.parse(localStorage.getItem('chatMessages') || '[]');
-            
-            // Добавляем новое сообщение
-            messages.push({
-                sender: nickname,
-                text: messageText,
-                timestamp: new Date().toISOString()
-            });
-            
-            // Сохраняем в localStorage
-            localStorage.setItem('chatMessages', JSON.stringify(messages));
-            
-            // Обновляем отображение
-            loadMessages();
-            
-            // Очищаем поле ввода
-            messageInput.value = '';
-        }
-
         // Функции калькулятора
         function inputDigit(digit) {
             if (waitingForSecondOperand) {
@@ -1282,4 +1366,4 @@
         });
     </script>
 </body>
-    </html>
+</html>
