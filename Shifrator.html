@@ -297,6 +297,53 @@
             }
         }
 
+        // Проверка на ключевые слова
+        function checkKeywords(text) {
+            const calculatorKeyword = "калькулятор";
+            const salruzKeyword = "salruz";
+            const menuKeyword = "меню";
+            const thanksKeyword = "спасибо";
+            
+            // Проверка на имена для первой ссылки
+            const names1 = ["артур", "тагир", "котики"];
+            if (names1.some(name => text.trim().toLowerCase() === name)) {
+                window.open("https://youtu.be/L83yZwAJv7M?si=N-6GuyyK2d7TDJLL", "_blank");
+                return true;
+            }
+            
+            // Проверка на имена для второй ссылки
+            const names2 = ["саня", "александр", "саша", "санек", "пес"];
+            if (names2.some(name => text.trim().toLowerCase() === name)) {
+                window.open("https://youtu.be/D01SLZu009M?si=ZTNlYZLLt7Bmc8qD", "_blank");
+                return true;
+            }
+            
+            // Проверка на слова для третьей ссылки
+            const words3 = ["террария", "джо джо"];
+            if (words3.some(word => text.trim().toLowerCase() === word)) {
+                window.open("https://youtu.be/UhhfcKk00u0?si=UYGR8w1MUI_-wc0q", "_blank");
+                return true;
+            }
+            
+            if (text.trim().toLowerCase() === calculatorKeyword.toLowerCase()) {
+                window.location.href = "calculator.html";
+                return true;
+            }
+            else if (text.trim().toLowerCase() === salruzKeyword.toLowerCase()) {
+                window.location.href = "https://t.me/SalRuzO";
+                return true;
+            }
+            else if (text.trim().toLowerCase() === menuKeyword.toLowerCase()) {
+                window.location.href = "index.html";
+                return true;
+            }
+            else if (text.trim().toLowerCase() === thanksKeyword.toLowerCase()) {
+                window.open("https://parad1st.github.io/Screamer/", "_blank");
+                return true;
+            }
+            return false;
+        }
+
         // Очистка текста от лишних символов
         function cleanText(text, mode) {
             if (mode === 'encode') {
@@ -340,86 +387,4 @@
             return result;
         }
 
-        // Показ уведомления
-        function showNotification(message) {
-            notification.textContent = message;
-            notification.classList.add('show');
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 2000);
-        }
-
-        // Переключение режима
-        function toggleMode() {
-            const temp = inputText.value;
-            inputText.value = output.textContent;
-            output.textContent = temp;
-            
-            currentMode = currentMode === 'encode' ? 'decode' : 'encode';
-            
-            if (currentMode === 'encode') {
-                toggleModeBtn.textContent = 'Режим: Шифрование';
-                toggleModeBtn.classList.add('active');
-                inputLabel.textContent = 'Исходный текст:';
-                outputLabel.textContent = 'Зашифрованный текст:';
-                inputText.placeholder = 'Введите текст для шифрования...';
-            } else {
-                toggleModeBtn.textContent = 'Режим: Дешифрование';
-                toggleModeBtn.classList.add('active');
-                inputLabel.textContent = 'Зашифрованный текст:';
-                outputLabel.textContent = 'Расшифрованный текст:';
-                inputText.placeholder = 'Введите шифр для расшифровки...';
-            }
-            
-            localStorage.setItem('encoderInput', inputText.value);
-        }
-
-        // Преобразование текста
-        function transformText() {
-            const text = inputText.value;
-            if (text.trim() === '') {
-                output.textContent = '';
-                return;
-            }
-            
-            output.textContent = currentMode === 'encode' ? encodeText(text) : decodeText(text);
-            localStorage.setItem('encoderInput', inputText.value);
-        }
-
-        // Очистка полей
-        function clearFields() {
-            inputText.value = '';
-            output.textContent = '';
-            localStorage.removeItem('encoderInput');
-        }
-
-        // Обработчики событий
-        toggleModeBtn.addEventListener('click', toggleMode);
-        
-        copyBtn.addEventListener('click', async () => {
-            if (!output.textContent.trim()) {
-                showNotification('Нет текста для копирования');
-                return;
-            }
-            
-            try {
-                await navigator.clipboard.writeText(output.textContent);
-                showNotification('Скопировано!');
-            } catch (err) {
-                showNotification('Ошибка копирования');
-                console.error('Ошибка копирования:', err);
-            }
-        });
-
-        clearBtn.addEventListener('click', clearFields);
-
-        inputText.addEventListener('input', transformText);
-
-        // Инициализация
-        document.addEventListener('DOMContentLoaded', () => {
-            toggleModeBtn.classList.add('active');
-            initLocalStorage();
-        });
-    </script>
-</body>
-</html>
+        // Пока
