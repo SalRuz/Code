@@ -316,7 +316,7 @@
         /* Стили для счетчика посещений */
         .visit-counter {
             position: absolute;
-            bottom: 80px;
+            bottom: 100px;
             left: 50%;
             transform: translateX(-50%);
             background-color: rgba(255, 255, 255, 0.8);
@@ -330,7 +330,7 @@
         /* Стили для приветствия */
         .welcome-message {
             position: absolute;
-            bottom: 120px;
+            bottom: 140px;
             left: 50%;
             transform: translateX(-50%);
             background-color: rgba(255, 255, 255, 0.8);
@@ -356,33 +356,58 @@
             position: relative;
         }
         
-        .chat-input-group {
-            margin-bottom: 20px;
-            position: relative;
-            width: 80%;
-            margin-left: auto;
-            margin-right: auto;
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 500px;
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+        }
+        
+        .message {
+            margin-bottom: 10px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            background-color: #f1f1f1;
+            text-align: left;
+            word-break: break-word;
+        }
+        
+        .message-sender {
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        .chat-input-container {
+            display: flex;
+            padding: 10px;
+            background-color: #f5f5f5;
+            border-top: 1px solid #ddd;
         }
         
         .chat-input {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-family: var(--font-main);
-            font-size: 1rem;
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-right: 10px;
         }
         
-        .chat-ok-btn {
-            position: absolute;
-            right: 5px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: var(--primary);
+        .chat-send-btn {
+            padding: 10px 15px;
+            background-color: var(--primary);
             color: white;
             border: none;
             border-radius: 4px;
-            padding: 5px 10px;
             cursor: pointer;
         }
         
@@ -396,6 +421,36 @@
             border: none;
             border-radius: 8px;
             font-size: 1rem;
+            cursor: pointer;
+        }
+        
+        .nickname-input-group {
+            margin-bottom: 20px;
+            position: relative;
+            width: 80%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .nickname-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-family: var(--font-main);
+            font-size: 1rem;
+        }
+        
+        .nickname-ok-btn {
+            position: absolute;
+            right: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 5px 10px;
             cursor: pointer;
         }
         
@@ -417,8 +472,12 @@
                 padding: 20px;
             }
             
-            .chat-input-group {
+            .nickname-input-group {
                 width: 95%;
+            }
+            
+            .chat-container {
+                height: 400px;
             }
         }
     </style>
@@ -497,18 +556,30 @@
             <button class="menu-btn" id="menuBtn1">Смена Фона</button>
             <button class="menu-btn" id="menuBtn2">Музончик</button>
             <button class="menu-btn" id="menuBtn3">Чат</button>
-            <button class="menu-btn" id="menuBtn4"></button>
+            <button class="menu-btn" id="menuBtn4">Калькулятор</button>
             <button class="menu-btn" id="menuBtn5">Шифратор</button>
             <div class="visit-counter" id="visitCounter">Посещений: 0</div>
             <div class="welcome-message" id="welcomeMessage"></div>
         </main>
         
         <main class="chat" id="chatApp">
-            <div class="chat-input-group">
-                <input type="text" class="chat-input" id="nicknameInput" placeholder="Придумайте Никнейм">
-                <button class="chat-ok-btn" id="nicknameOkBtn">Ок</button>
+            <div id="nicknameSetup">
+                <div class="nickname-input-group">
+                    <input type="text" class="nickname-input" id="nicknameInput" placeholder="Придумайте Никнейм">
+                    <button class="nickname-ok-btn" id="nicknameOkBtn">Ок</button>
+                </div>
             </div>
-            <button class="chat-back-btn" id="chatBackBtn">Вернуться в меню</button>
+            
+            <div id="chatInterface" style="display: none;">
+                <div class="chat-container">
+                    <div class="chat-messages" id="chatMessages"></div>
+                    <div class="chat-input-container">
+                        <input type="text" class="chat-input" id="messageInput" placeholder="Введите сообщение...">
+                        <button class="chat-send-btn" id="sendMessageBtn">Отправить</button>
+                    </div>
+                </div>
+                <button class="chat-back-btn" id="chatBackBtn">Вернуться в меню</button>
+            </div>
         </main>
         
         <footer>
@@ -566,6 +637,11 @@
         const nicknameOkBtn = document.getElementById('nicknameOkBtn');
         const chatBackBtn = document.getElementById('chatBackBtn');
         const calculatorBackBtn = document.getElementById('calculatorBackBtn');
+        const chatMessages = document.getElementById('chatMessages');
+        const messageInput = document.getElementById('messageInput');
+        const sendMessageBtn = document.getElementById('sendMessageBtn');
+        const nicknameSetup = document.getElementById('nicknameSetup');
+        const chatInterface = document.getElementById('chatInterface');
         
         // Элементы калькулятора
         const calculatorDisplay = document.getElementById('calculatorDisplay');
@@ -581,6 +657,7 @@
         const menuBtn1 = document.getElementById('menuBtn1');
         const menuBtn2 = document.getElementById('menuBtn2');
         const menuBtn3 = document.getElementById('menuBtn3');
+        const menuBtn4 = document.getElementById('menuBtn4');
         const menuBtn5 = document.getElementById('menuBtn5');
 
         // Аудио элемент
@@ -634,6 +711,18 @@
             // Никнейм пользователя
             if (localStorage.getItem('userNickname')) {
                 welcomeMessage.textContent = `Добро пожаловать, ${localStorage.getItem('userNickname')}`;
+                
+                // Если никнейм есть, показываем интерфейс чата
+                nicknameSetup.style.display = 'none';
+                chatInterface.style.display = 'block';
+                
+                // Загружаем сообщения
+                loadMessages();
+            }
+            
+            // Загружаем текущий фон
+            if (localStorage.getItem('currentBackground')) {
+                menuApp.style.backgroundImage = `url('${localStorage.getItem('currentBackground')}')`;
             }
         }
 
@@ -832,7 +921,15 @@
                 case 'chat':
                     chatApp.style.display = 'block';
                     appTitle.textContent = 'Чат';
-                    appSubtitle.textContent = 'Установите ваш никнейм';
+                    if (localStorage.getItem('userNickname')) {
+                        appSubtitle.textContent = 'Чат с друзьями';
+                        nicknameSetup.style.display = 'none';
+                        chatInterface.style.display = 'block';
+                    } else {
+                        appSubtitle.textContent = 'Установите ваш никнейм';
+                        nicknameSetup.style.display = 'block';
+                        chatInterface.style.display = 'none';
+                    }
                     break;
                 default:
                     encoderApp.style.display = 'block';
@@ -851,6 +948,7 @@
             
             lastBackgroundIndex = randomIndex;
             menuApp.style.backgroundImage = `url('${backgrounds[randomIndex]}')`;
+            localStorage.setItem('currentBackground', backgrounds[randomIndex]);
         }
 
         // Управление музыкой
@@ -901,7 +999,57 @@
             
             localStorage.setItem('userNickname', nickname);
             welcomeMessage.textContent = `Добро пожаловать, ${nickname}`;
-            switchApp('menu');
+            
+            // Переключаем на интерфейс чата
+            nicknameSetup.style.display = 'none';
+            chatInterface.style.display = 'block';
+            appSubtitle.textContent = 'Чат с друзьями';
+            
+            // Загружаем сообщения
+            loadMessages();
+        }
+
+        // Загрузка сообщений
+        function loadMessages() {
+            const messages = JSON.parse(localStorage.getItem('chatMessages') || '[]');
+            chatMessages.innerHTML = '';
+            
+            messages.forEach(msg => {
+                const messageElement = document.createElement('div');
+                messageElement.className = 'message';
+                messageElement.innerHTML = `<span class="message-sender">${msg.sender}:</span> ${msg.text}`;
+                chatMessages.appendChild(messageElement);
+            });
+            
+            // Прокручиваем вниз
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Отправка сообщения
+        function sendMessage() {
+            const messageText = messageInput.value.trim();
+            if (!messageText) return;
+            
+            const nickname = localStorage.getItem('userNickname') || 'Аноним';
+            
+            // Получаем текущие сообщения
+            const messages = JSON.parse(localStorage.getItem('chatMessages') || '[]');
+            
+            // Добавляем новое сообщение
+            messages.push({
+                sender: nickname,
+                text: messageText,
+                timestamp: new Date().toISOString()
+            });
+            
+            // Сохраняем в localStorage
+            localStorage.setItem('chatMessages', JSON.stringify(messages));
+            
+            // Обновляем отображение
+            loadMessages();
+            
+            // Очищаем поле ввода
+            messageInput.value = '';
         }
 
         // Функции калькулятора
@@ -1021,6 +1169,9 @@
         menuBtn3.addEventListener('click', () => {
             switchApp('chat');
         });
+        menuBtn4.addEventListener('click', () => {
+            switchApp('calculator');
+        });
         menuBtn5.addEventListener('click', () => {
             switchApp('encoder');
         });
@@ -1030,10 +1181,18 @@
         chatBackBtn.addEventListener('click', () => {
             switchApp('menu');
         });
+        
+        sendMessageBtn.addEventListener('click', sendMessage);
+        
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
 
         // Обработчик для кнопки назад в калькуляторе
         calculatorBackBtn.addEventListener('click', () => {
-            switchApp('encoder');
+            switchApp('menu');
         });
 
         // Обработчики событий музыки
@@ -1113,7 +1272,14 @@
             toggleModeBtn.classList.add('active');
             resetCalculator();
             initLocalStorage();
+            
+            // Загружаем текущий фон
+            if (localStorage.getItem('currentBackground')) {
+                menuApp.style.backgroundImage = `url('${localStorage.getItem('currentBackground')}')`;
+            } else {
+                localStorage.setItem('currentBackground', backgrounds[0]);
+            }
         });
     </script>
 </body>
-</html>
+    </html>
