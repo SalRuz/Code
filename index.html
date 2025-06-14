@@ -284,7 +284,7 @@
             
             currentUser = nickname;
             localStorage.setItem('chatUser', nickname);
-            nicknameModal.style.display = 'none';
+            nicknameModal.style.display = 'none'; // Исправлено: скрываем модальное окно
             
             setupRealtimeUpdates();
             loadMessages();
