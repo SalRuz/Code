@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Supabase Chat</title>
+    <title>Анонимный чат</title>
     <style>
         :root {
             --primary: #4a6bdf;
@@ -40,6 +40,13 @@
             border-radius: 12px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             overflow: hidden;
+        }
+        
+        .chat-header {
+            padding: 15px;
+            background-color: var(--primary);
+            color: white;
+            text-align: center;
         }
         
         .chat-messages {
@@ -97,50 +104,6 @@
             cursor: pointer;
         }
         
-        .nickname-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(0, 0, 0, 0.5);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-        }
-        
-        .nickname-box {
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            width: 90%;
-            max-width: 400px;
-        }
-        
-        .nickname-input-group {
-            margin-bottom: 15px;
-        }
-        
-        .nickname-input {
-            width: 100%;
-            padding: 10px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-size: 1rem;
-        }
-        
-        .nickname-submit-btn {
-            width: 100%;
-            padding: 10px;
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            cursor: pointer;
-        }
-        
         @media (max-width: 768px) {
             body {
                 padding: 10px;
@@ -150,19 +113,14 @@
 </head>
 <body>
     <div class="chat-container">
+        <div class="chat-header">
+            <h2>Анонимный чат</h2>
+            <p>Вы вошли как: <span id="currentUser">Гость</span></p>
+        </div>
         <div class="chat-messages" id="chatMessages"></div>
         <div class="chat-input-container">
-            <input type="text" class="chat-input" id="messageInput" placeholder="Введите сообщение...">
+            <input type="text" class="chat-input" id="messageInput" placeholder="Введите сообщение..." autofocus>
             <button class="chat-send-btn" id="sendMessageBtn">Отправить</button>
-        </div>
-    </div>
-
-    <div class="nickname-modal" id="nicknameModal">
-        <div class="nickname-box">
-            <div class="nickname-input-group">
-                <input type="text" class="nickname-input" id="nicknameInput" placeholder="Введите ваш никнейм">
-            </div>
-            <button class="nickname-submit-btn" id="nicknameSubmitBtn">Продолжить</button>
         </div>
     </div>
 
@@ -179,11 +137,16 @@
         const chatMessages = document.getElementById('chatMessages');
         const messageInput = document.getElementById('messageInput');
         const sendMessageBtn = document.getElementById('sendMessageBtn');
-        const nicknameModal = document.getElementById('nicknameModal');
-        const nicknameInput = document.getElementById('nicknameInput');
-        const nicknameSubmitBtn = document.getElementById('nicknameSubmitBtn');
+        const currentUserSpan = document.getElementById('currentUser');
 
-        let currentUser = '';
+        // Генерация случайного ID для гостя
+        function generateGuestId() {
+            return 'Гость-' + Math.floor(Math.random() * 10000);
+        }
+
+        // Установка пользователя
+        const currentUser = generateGuestId();
+        currentUserSpan.textContent = currentUser;
 
         // Загрузка сообщений из Supabase
         async function loadMessages() {
@@ -200,7 +163,7 @@
                 chatMessages.innerHTML = '';
                 
                 if (data.length === 0) {
-                    chatMessages.innerHTML = '<div style="text-align: center;">Нет сообщений</div>';
+                    chatMessages.innerHTML = '<div style="text-align: center;">Чат пуст. Будьте первым!</div>';
                     return;
                 }
                 
@@ -219,7 +182,7 @@
         // Отправка сообщения в Supabase
         async function sendMessage() {
             const messageText = messageInput.value.trim();
-            if (!messageText || !currentUser) return;
+            if (!messageText) return;
 
             try {
                 sendMessageBtn.disabled = true;
@@ -234,6 +197,7 @@
                 if (error) throw error;
                 
                 messageInput.value = '';
+                messageInput.focus();
                 
             } catch (error) {
                 console.error('Ошибка отправки:', error);
@@ -277,33 +241,8 @@
                 .subscribe();
         }
 
-        // Установка пользователя
-        function setUser() {
-            const nickname = nicknameInput.value.trim();
-            if (!nickname) return;
-            
-            currentUser = nickname;
-            localStorage.setItem('chatUser', nickname);
-            nicknameModal.style.display = 'none'; // Исправлено: скрываем модальное окно
-            
-            setupRealtimeUpdates();
-            loadMessages();
-        }
-
-        // Проверка сохраненного пользователя
-        function checkSavedUser() {
-            const savedUser = localStorage.getItem('chatUser');
-            if (savedUser) {
-                currentUser = savedUser;
-                nicknameModal.style.display = 'none';
-                setupRealtimeUpdates();
-                loadMessages();
-            }
-        }
-
         // Обработчики событий
         sendMessageBtn.addEventListener('click', sendMessage);
-        nicknameSubmitBtn.addEventListener('click', setUser);
         
         messageInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
@@ -311,15 +250,10 @@
             }
         });
 
-        nicknameInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                setUser();
-            }
-        });
-
         // Инициализация
         document.addEventListener('DOMContentLoaded', () => {
-            checkSavedUser();
+            setupRealtimeUpdates();
+            loadMessages();
         });
     </script>
 </body>
