@@ -174,7 +174,7 @@
             <button class="menu-btn" id="menuBtn1">Смена Фона</button>
             <button class="menu-btn" id="menuBtn2">Музончик</button>
             <button class="menu-btn" id="menuBtn3">Чат</button>
-            <button class="menu-btn" id="menuBtn4"></button>
+            <button class="menu-btn" id="menuBtn4">Калькулятор</button>
             <button class="menu-btn" id="menuBtn5">Шифратор</button>
             <div class="visit-counter" id="visitCounter">Посещений: 0</div>
             <div class="welcome-message" id="welcomeMessage"></div>
@@ -207,6 +207,7 @@
         const menuBtn1 = document.getElementById('menuBtn1');
         const menuBtn2 = document.getElementById('menuBtn2');
         const menuBtn3 = document.getElementById('menuBtn3');
+        const menuBtn4 = document.getElementById('menuBtn4');
         const menuBtn5 = document.getElementById('menuBtn5');
         const visitCounter = document.getElementById('visitCounter');
         const welcomeMessage = document.getElementById('welcomeMessage');
@@ -265,6 +266,11 @@
             window.location.href = "chat.html";
         }
 
+        // Переход в калькулятор
+        function goToCalculator() {
+            window.location.href = "calculator.html";
+        }
+
         // Переход в шифратор
         function goToShifrator() {
             window.location.href = "Shifrator.html";
@@ -274,6 +280,7 @@
         menuBtn1.addEventListener('click', changeBackground);
         menuBtn2.addEventListener('click', toggleMusic);
         menuBtn3.addEventListener('click', goToChat);
+        menuBtn4.addEventListener('click', goToCalculator);
         menuBtn5.addEventListener('click', goToShifrator);
 
         // Инициализация
