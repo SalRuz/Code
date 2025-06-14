@@ -186,23 +186,30 @@
 
             try {
                 sendMessageBtn.disabled = true;
+                sendMessageBtn.textContent = 'Отправка...';
                 
-                const { error } = await supabase
+                const { data, error } = await supabase
                     .from('messages')
                     .insert([{ 
                         sender: currentUser, 
                         text: messageText 
-                    }]);
+                    }])
+                    .select();
                 
                 if (error) throw error;
+                
+                // Добавляем свое сообщение сразу в чат
+                addMessageToChat(currentUser, messageText, new Date().toISOString());
                 
                 messageInput.value = '';
                 messageInput.focus();
                 
             } catch (error) {
                 console.error('Ошибка отправки:', error);
+                alert('Ошибка при отправке сообщения: ' + error.message);
             } finally {
                 sendMessageBtn.disabled = false;
+                sendMessageBtn.textContent = 'Отправить';
             }
         }
 
@@ -235,7 +242,10 @@
                         table: 'messages'
                     },
                     (payload) => {
-                        addMessageToChat(payload.new.sender, payload.new.text, payload.new.created_at);
+                        // Не добавляем свое же сообщение дважды
+                        if (payload.new.sender !== currentUser) {
+                            addMessageToChat(payload.new.sender, payload.new.text, payload.new.created_at);
+                        }
                     }
                 )
                 .subscribe();
