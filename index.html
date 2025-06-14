@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat App</title>
+    <title>Supabase Chat</title>
     <style>
         :root {
             --primary: #4a6bdf;
-            --primary-dark: #3a56b2;
             --light: #ecf0f1;
             --dark: #2c3e50;
             --font-main: 'Segoe UI', system-ui, -apple-system, sans-serif;
@@ -25,85 +24,21 @@
             background-color: #f5f7fa;
             color: var(--dark);
             padding: 20px;
-        }
-        
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-        }
-        
-        header {
-            background: var(--primary);
-            color: white;
-            padding: 25px;
-            text-align: center;
-        }
-        
-        h1 {
-            font-size: 2.2rem;
-            margin-bottom: 10px;
-        }
-        
-        .subtitle {
-            opacity: 0.9;
-            font-weight: normal;
-        }
-        
-        .menu {
-            padding: 30px;
-            text-align: center;
-            background-image: url('IMG/SalRuz.png');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            min-height: 600px;
-            position: relative;
-        }
-        
-        .menu-btn {
-            display: block;
-            width: 100%;
-            padding: 15px;
-            margin-bottom: 15px;
-            background-color: rgba(74, 107, 223, 0.25);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: background-color 0.2s;
-            position: relative;
-            backdrop-filter: blur(5px);
-        }
-        
-        .menu-btn:hover {
-            background-color: rgba(74, 107, 223, 0.4);
-        }
-        
-        .chat {
-            display: none;
-            padding: 30px;
-            text-align: center;
-            background-image: url('IMG/SalRuz.png');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            min-height: 600px;
-            position: relative;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
         
         .chat-container {
+            flex: 1;
             display: flex;
             flex-direction: column;
-            height: 500px;
             max-width: 800px;
             margin: 0 auto;
-            background-color: rgba(255, 255, 255, 0.8);
-            border-radius: 8px;
+            width: 100%;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             overflow: hidden;
         }
         
@@ -111,6 +46,7 @@
             flex: 1;
             padding: 15px;
             overflow-y: auto;
+            background-color: rgba(255, 255, 255, 0.8);
         }
         
         .message {
@@ -118,7 +54,6 @@
             padding: 8px 12px;
             border-radius: 8px;
             background-color: #f1f1f1;
-            text-align: left;
             word-break: break-word;
         }
         
@@ -162,10 +97,41 @@
             cursor: pointer;
         }
         
-        .chat-back-btn {
-            display: block;
-            width: 150px;
-            margin: 20px auto 0;
+        .nickname-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+        
+        .nickname-box {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 400px;
+        }
+        
+        .nickname-input-group {
+            margin-bottom: 15px;
+        }
+        
+        .nickname-input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        
+        .nickname-submit-btn {
+            width: 100%;
             padding: 10px;
             background-color: var(--primary);
             color: white;
@@ -175,90 +141,29 @@
             cursor: pointer;
         }
         
-        .nickname-input-group {
-            margin-bottom: 20px;
-            position: relative;
-            width: 80%;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        
-        .nickname-input {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-family: var(--font-main);
-            font-size: 1rem;
-        }
-        
-        .nickname-ok-btn {
-            position: absolute;
-            right: 5px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 4px;
-            padding: 5px 10px;
-            cursor: pointer;
-        }
-        
         @media (max-width: 768px) {
             body {
                 padding: 10px;
-            }
-            
-            h1 {
-                font-size: 1.8rem;
-            }
-            
-            .menu, .chat {
-                min-height: 500px;
-                padding: 20px;
-            }
-            
-            .nickname-input-group {
-                width: 95%;
-            }
-            
-            .chat-container {
-                height: 400px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1 id="appTitle">Меню</h1>
-            <p class="subtitle" id="appSubtitle">Выберите действие</p>
-        </header>
-        
-        <main class="menu" id="menuApp">
-            <button class="menu-btn" id="chatBtn">Чат</button>
-        </main>
-        
-        <main class="chat" id="chatApp">
-            <div id="nicknameSetup">
-                <div class="nickname-input-group">
-                    <input type="text" class="nickname-input" id="nicknameInput" placeholder="Придумайте Никнейм">
-                    <button class="nickname-ok-btn" id="nicknameOkBtn">Ок</button>
-                </div>
+    <div class="chat-container">
+        <div class="chat-messages" id="chatMessages"></div>
+        <div class="chat-input-container">
+            <input type="text" class="chat-input" id="messageInput" placeholder="Введите сообщение...">
+            <button class="chat-send-btn" id="sendMessageBtn">Отправить</button>
+        </div>
+    </div>
+
+    <div class="nickname-modal" id="nicknameModal">
+        <div class="nickname-box">
+            <div class="nickname-input-group">
+                <input type="text" class="nickname-input" id="nicknameInput" placeholder="Введите ваш никнейм">
             </div>
-            
-            <div id="chatInterface" style="display: none;">
-                <div class="chat-container">
-                    <div class="chat-messages" id="chatMessages"></div>
-                    <div class="chat-input-container">
-                        <input type="text" class="chat-input" id="messageInput" placeholder="Введите сообщение...">
-                        <button class="chat-send-btn" id="sendMessageBtn">Отправить</button>
-                    </div>
-                </div>
-                <button class="chat-back-btn" id="chatBackBtn">Вернуться в меню</button>
-            </div>
-        </main>
+            <button class="nickname-submit-btn" id="nicknameSubmitBtn">Продолжить</button>
+        </div>
     </div>
 
     <!-- Подключаем Supabase JS -->
@@ -271,19 +176,14 @@
         const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
         // DOM элементы
-        const appTitle = document.getElementById('appTitle');
-        const appSubtitle = document.getElementById('appSubtitle');
-        const menuApp = document.getElementById('menuApp');
-        const chatApp = document.getElementById('chatApp');
-        const chatBtn = document.getElementById('chatBtn');
-        const nicknameInput = document.getElementById('nicknameInput');
-        const nicknameOkBtn = document.getElementById('nicknameOkBtn');
-        const chatBackBtn = document.getElementById('chatBackBtn');
         const chatMessages = document.getElementById('chatMessages');
         const messageInput = document.getElementById('messageInput');
         const sendMessageBtn = document.getElementById('sendMessageBtn');
-        const nicknameSetup = document.getElementById('nicknameSetup');
-        const chatInterface = document.getElementById('chatInterface');
+        const nicknameModal = document.getElementById('nicknameModal');
+        const nicknameInput = document.getElementById('nicknameInput');
+        const nicknameSubmitBtn = document.getElementById('nicknameSubmitBtn');
+
+        let currentUser = '';
 
         // Загрузка сообщений из Supabase
         async function loadMessages() {
@@ -305,18 +205,7 @@
                 }
                 
                 data.forEach(msg => {
-                    const date = new Date(msg.created_at);
-                    const timeString = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                    
-                    const messageElement = document.createElement('div');
-                    messageElement.className = 'message';
-                    messageElement.innerHTML = `
-                        <span class="message-sender">${msg.sender}</span>
-                        <span class="message-time">${timeString}</span>
-                        <div class="message-text">${msg.text}</div>
-                    `;
-                    
-                    chatMessages.appendChild(messageElement);
+                    addMessageToChat(msg.sender, msg.text, msg.created_at);
                 });
                 
                 chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -330,18 +219,15 @@
         // Отправка сообщения в Supabase
         async function sendMessage() {
             const messageText = messageInput.value.trim();
-            if (!messageText) return;
+            if (!messageText || !currentUser) return;
 
-            const nickname = localStorage.getItem('userNickname') || 'Аноним';
-            
             try {
                 sendMessageBtn.disabled = true;
-                sendMessageBtn.textContent = 'Отправка...';
                 
                 const { error } = await supabase
                     .from('messages')
                     .insert([{ 
-                        sender: nickname, 
+                        sender: currentUser, 
                         text: messageText 
                     }]);
                 
@@ -351,11 +237,26 @@
                 
             } catch (error) {
                 console.error('Ошибка отправки:', error);
-                
             } finally {
                 sendMessageBtn.disabled = false;
-                sendMessageBtn.textContent = 'Отправить';
             }
+        }
+
+        // Добавление сообщения в чат
+        function addMessageToChat(sender, text, timestamp) {
+            const date = new Date(timestamp);
+            const timeString = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            const messageElement = document.createElement('div');
+            messageElement.className = 'message';
+            messageElement.innerHTML = `
+                <span class="message-sender">${sender}</span>
+                <span class="message-time">${timeString}</span>
+                <div class="message-text">${text}</div>
+            `;
+            
+            chatMessages.appendChild(messageElement);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
         // Настройка real-time обновлений чата
@@ -370,71 +271,39 @@
                         table: 'messages'
                     },
                     (payload) => {
-                        const newMessage = payload.new;
-                        const date = new Date(newMessage.created_at);
-                        const timeString = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                        
-                        const messageElement = document.createElement('div');
-                        messageElement.className = 'message';
-                        messageElement.innerHTML = `
-                            <span class="message-sender">${newMessage.sender}</span>
-                            <span class="message-time">${timeString}</span>
-                            <div class="message-text">${newMessage.text}</div>
-                        `;
-                        
-                        chatMessages.appendChild(messageElement);
-                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                        addMessageToChat(payload.new.sender, payload.new.text, payload.new.created_at);
                     }
                 )
                 .subscribe();
         }
 
-        // Сохранение никнейма пользователя
-        function saveNickname() {
+        // Установка пользователя
+        function setUser() {
             const nickname = nicknameInput.value.trim();
             if (!nickname) return;
             
-            localStorage.setItem('userNickname', nickname);
-            
-            nicknameSetup.style.display = 'none';
-            chatInterface.style.display = 'block';
-            appSubtitle.textContent = 'Чат с друзьями';
+            currentUser = nickname;
+            localStorage.setItem('chatUser', nickname);
+            nicknameModal.style.display = 'none';
             
             setupRealtimeUpdates();
             loadMessages();
         }
 
-        // Переключение между меню и чатом
-        function toggleChat() {
-            if (menuApp.style.display !== 'none') {
-                menuApp.style.display = 'none';
-                chatApp.style.display = 'block';
-                appTitle.textContent = 'Чат';
-                
-                if (localStorage.getItem('userNickname')) {
-                    appSubtitle.textContent = 'Чат с друзьями';
-                    nicknameSetup.style.display = 'none';
-                    chatInterface.style.display = 'block';
-                    setupRealtimeUpdates();
-                    loadMessages();
-                } else {
-                    appSubtitle.textContent = 'Установите ваш никнейм';
-                    nicknameSetup.style.display = 'block';
-                    chatInterface.style.display = 'none';
-                }
-            } else {
-                menuApp.style.display = 'block';
-                chatApp.style.display = 'none';
-                appTitle.textContent = 'Меню';
-                appSubtitle.textContent = 'Выберите действие';
+        // Проверка сохраненного пользователя
+        function checkSavedUser() {
+            const savedUser = localStorage.getItem('chatUser');
+            if (savedUser) {
+                currentUser = savedUser;
+                nicknameModal.style.display = 'none';
+                setupRealtimeUpdates();
+                loadMessages();
             }
         }
 
         // Обработчики событий
-        chatBtn.addEventListener('click', toggleChat);
-        chatBackBtn.addEventListener('click', toggleChat);
-        nicknameOkBtn.addEventListener('click', saveNickname);
         sendMessageBtn.addEventListener('click', sendMessage);
+        nicknameSubmitBtn.addEventListener('click', setUser);
         
         messageInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
@@ -442,13 +311,15 @@
             }
         });
 
+        nicknameInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                setUser();
+            }
+        });
+
         // Инициализация
         document.addEventListener('DOMContentLoaded', () => {
-            // Проверяем, есть ли сохраненный никнейм
-            if (localStorage.getItem('userNickname')) {
-                nicknameSetup.style.display = 'none';
-                chatInterface.style.display = 'block';
-            }
+            checkSavedUser();
         });
     </script>
 </body>
