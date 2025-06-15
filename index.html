@@ -278,11 +278,20 @@
             transition: background-image 0.5s ease-in-out;
         }
         
+        .menu-buttons-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-width: 300px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+        
         .menu-btn {
             display: block;
             width: 100%;
             padding: 15px;
-            margin-bottom: 15px;
             background-color: rgba(74, 107, 223, 0.25);
             color: white;
             border: none;
@@ -325,23 +334,22 @@
         /* Стили для счетчика посещений */
         .visit-counter {
             position: absolute;
-            bottom: 180px; /* Сместил вниз */
-            left: 50%;
-            transform: translateX(-50%);
+            top: 20px;
+            right: 20px;
             background-color: rgba(255, 255, 255, 0.8);
             padding: 8px 20px;
             border-radius: 20px;
             font-weight: bold;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             width: max-content;
+            z-index: 1;
         }
         
         /* Стили для приветствия */
         .welcome-message {
             position: absolute;
-            bottom: 230px; /* Сместил вниз и увеличил расстояние от счетчика */
-            left: 50%;
-            transform: translateX(-50%);
+            top: 70px;
+            right: 20px;
             background-color: rgba(255, 255, 255, 0.8);
             padding: 8px 20px;
             border-radius: 20px;
@@ -350,6 +358,7 @@
             width: max-content;
             max-width: 80%;
             text-align: center;
+            z-index: 1;
         }
         
         /* Стили для чата */
@@ -490,11 +499,13 @@
             }
             
             .visit-counter {
-                bottom: 150px;
+                top: 10px;
+                right: 10px;
             }
             
             .welcome-message {
-                bottom: 200px;
+                top: 60px;
+                right: 10px;
             }
         }
     </style>
@@ -530,7 +541,6 @@
                     </svg>
                     Копировать
                 </button>
-                <button class="btn-tertiary" id="gameBtn">Игра</button>
                 <button class="btn-primary" id="clearBtn">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
@@ -571,14 +581,17 @@
         </main>
         
         <main class="menu" id="menuApp">
-            <button class="menu-btn" id="menuBtn1">Смена Фона</button>
-            <button class="menu-btn" id="menuBtn2">Музончик</button>
-            <button class="menu-btn" id="menuBtn3">Чат</button>
-            <button class="menu-btn" id="menuBtn4">Калькулятор</button>
-            <button class="menu-btn" id="menuBtn5">Шифратор</button>
-            <button class="menu-btn" id="menuBtn6">Игра</button>
             <div class="visit-counter" id="visitCounter">Посещений: 0</div>
             <div class="welcome-message" id="welcomeMessage"></div>
+            
+            <div class="menu-buttons-container">
+                <button class="menu-btn" id="menuBtn1">Смена Фона</button>
+                <button class="menu-btn" id="menuBtn2">Музончик</button>
+                <button class="menu-btn" id="menuBtn3">Чат</button>
+                <button class="menu-btn" id="menuBtn4">Калькулятор</button>
+                <button class="menu-btn" id="menuBtn5">Шифратор</button>
+                <button class="menu-btn" id="menuBtn6">Игра</button>
+            </div>
         </main>
         
         <main class="chat" id="chatApp">
@@ -605,11 +618,6 @@
             <p>© 2025 SalRuzO | У меня нет прав</p>
         </footer>
     </div>
-
-    <!-- Аудио элемент для музыки -->
-    <audio id="backgroundMusic" loop>
-        <source src="Music/music.mp3" type="audio/mpeg">
-    </audio>
 
     <script>
         // Шифр замены (исправленный)
@@ -640,7 +648,6 @@
         const output = document.getElementById('output');
         const copyBtn = document.getElementById('copyBtn');
         const clearBtn = document.getElementById('clearBtn');
-        const gameBtn = document.getElementById('gameBtn');
         const notification = document.getElementById('notification');
         const toggleModeBtn = document.getElementById('toggleModeBtn');
         const inputLabel = document.getElementById('inputLabel');
@@ -681,9 +688,6 @@
         const menuBtn5 = document.getElementById('menuBtn5');
         const menuBtn6 = document.getElementById('menuBtn6');
 
-        // Аудио элемент
-        const backgroundMusic = document.getElementById('backgroundMusic');
-
         let currentMode = 'encode';
         let currentApp = 'encoder';
         let firstOperand = null;
@@ -691,6 +695,8 @@
         let waitingForSecondOperand = false;
         let lastBackgroundIndex = 0;
         let isMusicPlaying = false;
+        let youtubePlayer = null;
+        let currentVideoIndex = -1;
 
         // Доступные фоны (включая SalRuz.png)
         const backgrounds = [
@@ -702,6 +708,14 @@
             'IMG/5.png',
             'IMG/6.png',
             'IMG/7.png'
+        ];
+
+        // Плейлист YouTube
+        const youtubePlaylist = [
+            "L83yZwAJv7M", // Артур, Тагир, Котики
+            "D01SLZu009M", // Саня, Александр, Саша, Санек, Пес
+            "UhhfcKk00u0", // Террария, Джо Джо
+            // Добавьте другие ID видео из плейлиста
         ];
 
         // Инициализация localStorage
@@ -977,41 +991,30 @@
             localStorage.setItem('currentBackground', backgrounds[randomIndex]);
         }
 
-        // Управление музыкой
-        function toggleMusic() {
-            if (backgroundMusic.paused) {
-                backgroundMusic.play()
-                    .then(() => {
-                        isMusicPlaying = true;
-                        menuBtn2.classList.add('music-playing');
-                        menuBtn2.classList.remove('music-paused');
-                    })
-                    .catch(error => {
-                        console.error('Ошибка воспроизведения музыки:', error);
-                        showNotification('Ошибка воспроизведения музыки');
-                    });
-            } else {
-                backgroundMusic.pause();
-                isMusicPlaying = false;
-                menuBtn2.classList.remove('music-playing');
-                menuBtn2.classList.add('music-paused');
-            }
+        // Воспроизведение случайного трека из плейлиста
+        function playRandomTrack() {
+            // Выбираем случайное видео из плейлиста (кроме текущего)
+            let newIndex;
+            do {
+                newIndex = Math.floor(Math.random() * youtubePlaylist.length);
+            } while (newIndex === currentVideoIndex && youtubePlaylist.length > 1);
+            
+            currentVideoIndex = newIndex;
+            const videoId = youtubePlaylist[currentVideoIndex];
+            
+            // Открываем видео в новом окне/вкладке
+            window.open(`https://www.youtube.com/watch?v=${videoId}&autoplay=1`, '_blank');
+            
+            // Обновляем состояние кнопки
+            menuBtn2.classList.add('music-playing');
+            menuBtn2.classList.remove('music-paused');
+            isMusicPlaying = true;
         }
 
         // Проверка на число 26 в калькуляторе
         function checkFor26() {
             if (calculatorDisplay.value === '26') {
-                backgroundMusic.play()
-                    .then(() => {
-                        isMusicPlaying = true;
-                        if (currentApp === 'menu') {
-                            menuBtn2.classList.add('music-playing');
-                            menuBtn2.classList.remove('music-paused');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Ошибка воспроизведения музыки:', error);
-                    });
+                playRandomTrack();
             }
         }
 
@@ -1188,14 +1191,10 @@
         });
 
         clearBtn.addEventListener('click', clearFields);
-        
-        gameBtn.addEventListener('click', () => {
-            window.open("https://salruz.github.io/Game/", "_blank");
-        });
 
         // Обработчики для меню
         menuBtn1.addEventListener('click', changeBackground);
-        menuBtn2.addEventListener('click', toggleMusic);
+        menuBtn2.addEventListener('click', playRandomTrack);
         menuBtn3.addEventListener('click', () => {
             switchApp('chat');
         });
@@ -1226,33 +1225,6 @@
         // Обработчик для кнопки назад в калькуляторе
         calculatorBackBtn.addEventListener('click', () => {
             switchApp('menu');
-        });
-
-        // Обработчики событий музыки
-        backgroundMusic.addEventListener('play', () => {
-            if (currentApp === 'menu') {
-                menuBtn2.classList.add('music-playing');
-                menuBtn2.classList.remove('music-paused');
-            }
-        });
-
-        backgroundMusic.addEventListener('pause', () => {
-            if (!backgroundMusic.ended) {
-                if (currentApp === 'menu') {
-                    menuBtn2.classList.remove('music-playing');
-                    menuBtn2.classList.add('music-paused');
-                }
-            } else {
-                if (currentApp === 'menu') {
-                    menuBtn2.classList.remove('music-playing', 'music-paused');
-                }
-            }
-        });
-
-        backgroundMusic.addEventListener('ended', () => {
-            if (currentApp === 'menu') {
-                menuBtn2.classList.remove('music-playing', 'music-paused');
-            }
         });
 
         // Автоматическое обновление при вводе
