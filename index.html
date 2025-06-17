@@ -148,15 +148,6 @@
             opacity: 0.9;
         }
         
-        .btn-tertiary {
-            background-color: var(--tertiary);
-            color: white;
-        }
-        
-        .btn-tertiary:hover {
-            opacity: 0.9;
-        }
-        
         .mode-toggle {
             display: flex;
             justify-content: center;
@@ -325,7 +316,7 @@
         /* Стили для счетчика посещений */
         .visit-counter {
             position: absolute;
-            bottom: 180px; /* Сместил вниз */
+            bottom: 100px;
             left: 50%;
             transform: translateX(-50%);
             background-color: rgba(255, 255, 255, 0.8);
@@ -339,7 +330,7 @@
         /* Стили для приветствия */
         .welcome-message {
             position: absolute;
-            bottom: 230px; /* Сместил вниз и увеличил расстояние от счетчика */
+            bottom: 140px;
             left: 50%;
             transform: translateX(-50%);
             background-color: rgba(255, 255, 255, 0.8);
@@ -488,14 +479,6 @@
             .chat-container {
                 height: 400px;
             }
-            
-            .visit-counter {
-                bottom: 150px;
-            }
-            
-            .welcome-message {
-                bottom: 200px;
-            }
         }
     </style>
 </head>
@@ -530,7 +513,6 @@
                     </svg>
                     Копировать
                 </button>
-                <button class="btn-tertiary" id="gameBtn">Игра</button>
                 <button class="btn-primary" id="clearBtn">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
@@ -576,7 +558,6 @@
             <button class="menu-btn" id="menuBtn3">Чат</button>
             <button class="menu-btn" id="menuBtn4">Калькулятор</button>
             <button class="menu-btn" id="menuBtn5">Шифратор</button>
-            <button class="menu-btn" id="menuBtn6">Игра</button>
             <div class="visit-counter" id="visitCounter">Посещений: 0</div>
             <div class="welcome-message" id="welcomeMessage"></div>
         </main>
@@ -640,7 +621,6 @@
         const output = document.getElementById('output');
         const copyBtn = document.getElementById('copyBtn');
         const clearBtn = document.getElementById('clearBtn');
-        const gameBtn = document.getElementById('gameBtn');
         const notification = document.getElementById('notification');
         const toggleModeBtn = document.getElementById('toggleModeBtn');
         const inputLabel = document.getElementById('inputLabel');
@@ -679,7 +659,6 @@
         const menuBtn3 = document.getElementById('menuBtn3');
         const menuBtn4 = document.getElementById('menuBtn4');
         const menuBtn5 = document.getElementById('menuBtn5');
-        const menuBtn6 = document.getElementById('menuBtn6');
 
         // Аудио элемент
         const backgroundMusic = document.getElementById('backgroundMusic');
@@ -846,7 +825,6 @@
             const salruzKeyword = "salruz";
             const menuKeyword = "меню";
             const thanksKeyword = "спасибо";
-            const gameKeyword = "игра";
             
             // Проверка на имена для первой ссылки
             const names1 = ["артур", "тагир", "котики"];
@@ -883,10 +861,6 @@
             }
             else if (text.trim().toLowerCase() === thanksKeyword.toLowerCase()) {
                 window.open("https://parad1st.github.io/Screamer/", "_blank");
-                return true;
-            }
-            else if (text.trim().toLowerCase() === gameKeyword.toLowerCase()) {
-                window.open("https://salruz.github.io/Game/", "_blank");
                 return true;
             }
             return false;
@@ -1188,10 +1162,6 @@
         });
 
         clearBtn.addEventListener('click', clearFields);
-        
-        gameBtn.addEventListener('click', () => {
-            window.open("https://salruz.github.io/Game/", "_blank");
-        });
 
         // Обработчики для меню
         menuBtn1.addEventListener('click', changeBackground);
@@ -1204,9 +1174,6 @@
         });
         menuBtn5.addEventListener('click', () => {
             switchApp('encoder');
-        });
-        menuBtn6.addEventListener('click', () => {
-            window.open("https://salruz.github.io/Game/", "_blank");
         });
 
         // Обработчики для чата
@@ -1316,4 +1283,3 @@
     </script>
 </body>
 </html>
-
